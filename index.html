@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fibar Hidrolik | Kurumsal</title>
+
+    <!-- Google Fonts: Montserrat ve Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- TASARIM SİSTEMİ (Renkler ve Fontlar) --- */
+        :root {
+            --text-main: #2A2A2A;
+            --accent-blue: #2B6CB0;
+            --bg-color: #C8CBB4;
+            --font-heading: 'Montserrat', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: var(--font-body);
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            color: var(--text-main);
+        }
+        section[id] {
+            scroll-margin-top: 110px;
+        }
+
+        /* --- AÇILIŞ EKRANI (Preloader Animasyonu) --- */
+        .preloader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            z-index: 9999;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .preloader-bg-top, .preloader-bg-bottom {
+            position: absolute;
+            left: 0; width: 100%; height: 50vh;
+            background-color: var(--text-main);
+            z-index: 9998;
+            /* 1 saniye bekler, 0.6 saniyede açılır */
+            animation: split-up 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1s forwards;
+        }
+        .preloader-bg-top { top: 0; }
+        .preloader-bg-bottom { bottom: 0; animation-name: split-down; }
+
+        .preloader-logo {
+            position: relative;
+            z-index: 9999;
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 20px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            /* 0.8 saniye sonra logo kaybolmaya başlar */
+            animation: fade-out 0.4s ease 0.8s forwards;
+        }
+        .preloader-logo img {
+            max-height: 100px; /* Açılıştaki büyük logonun boyutu */
+            width: auto;
+            display: block;
+        }
+
+        @keyframes split-up {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-100%); }
+        }
+        @keyframes split-down {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100%); }
+        }
+        @keyframes fade-out {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.8); visibility: hidden; }
+        }
+
+        /* --- ÜST BİLGİ BARI --- */
+        .top-bar {
+            background-color: var(--text-main);
+            color: #ffffff;
+            font-size: 14px;
+            padding: 8px 5%;
+            display: flex;
+            justify-content: flex-end;
+            gap: 20px;
+        }
+        .top-bar a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .top-bar a:hover {
+            color: var(--accent-blue);
+        }
+
+        /* --- ANA MENÜ --- */
+        .header {
+            background-color: #ffffff;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 500;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        .logo img {
+            max-height: 50px; /* Menüdeki küçük logonun boyutu */
+            width: auto;
+        }
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover {
+            color: var(--accent-blue);
+        }
+        .btn-wizard {
+            background-color: var(--accent-blue);
+            color: #ffffff !important;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn-wizard:hover {
+            background-color: #21548a;
+        }
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .menu-toggle span {
+            width: 26px;
+            height: 3px;
+            background-color: var(--text-main);
+            border-radius: 2px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .menu-toggle.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .menu-toggle.active span:nth-child(2) { opacity: 0; }
+        .menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+        /* --- KAHRAMAN ALANI (Hero) --- */
+        .hero {
+            padding: 100px 5%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 60vh;
+        }
+        .hero-subtitle {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .hero-title {
+            font-size: 64px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        .hero-slogan {
+            font-size: 24px;
+            font-weight: 400;
+            border-left: 4px solid var(--accent-blue);
+            padding-left: 15px;
+            margin-bottom: 30px;
+        }
+        .hero-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .btn-outline {
+            display: inline-block;
+            padding: 12px 26px;
+            border: 2px solid var(--text-main);
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .btn-outline:hover {
+            background-color: var(--text-main);
+            color: #ffffff;
+        }
+        .btn-solid {
+            display: inline-block;
+            padding: 12px 26px;
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .btn-solid:hover {
+            background-color: #21548a;
+        }
+
+        /* --- GENEL BÖLÜM STİLLERİ --- */
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .section-header h2 {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        .section-header p {
+            color: #555;
+            font-size: 16px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        /* --- HİZMETLER (Uzmanlık Alanları) --- */
+        .services-section {
+            padding: 80px 5%;
+            background-color: #ffffff;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .service-card {
+            background-color: var(--bg-color);
+            padding: 35px 25px;
+            border-radius: 8px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid var(--accent-blue);
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .service-card h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        /* --- KURUMSAL --- */
+        .about-section {
+            padding: 80px 5%;
+        }
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 50px;
+            align-items: center;
+        }
+        .about-grid h2 {
+            font-size: 34px;
+            margin-bottom: 20px;
+        }
+        .about-grid p {
+            margin-bottom: 16px;
+            color: #3a3a3a;
+        }
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .stat-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        .stat-card .stat-number {
+            font-family: var(--font-heading);
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--accent-blue);
+        }
+        .stat-card .stat-label {
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        /* --- ÜRÜNLER --- */
+        .products-section {
+            padding: 80px 5%;
+            background-color: #ffffff;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+        }
+        .product-card {
+            border: 1px solid #e4e4e4;
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            transition: border-color 0.3s ease, transform 0.3s ease;
+        }
+        .product-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-4px);
+        }
+        .product-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 18px;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            color: var(--accent-blue);
+            font-size: 20px;
+        }
+        .product-card h3 {
+            font-size: 17px;
+            margin-bottom: 10px;
+        }
+        .product-card p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* --- ÇALIŞMALARIMIZ --- */
+        .work-section {
+            padding: 80px 5%;
+        }
+        .work-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .work-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        .work-card-image {
+            height: 180px;
+            background: linear-gradient(135deg, var(--text-main), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 15px;
+            text-align: center;
+            padding: 15px;
+        }
+        .work-card-body {
+            padding: 20px;
+        }
+        .work-card-body h3 {
+            font-size: 17px;
+            margin-bottom: 8px;
+        }
+        .work-card-body p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* --- İLETİŞİM --- */
+        .contact-section {
+            padding: 80px 5%;
+            background-color: #ffffff;
+        }
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            gap: 50px;
+        }
+        .contact-info-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+        .contact-info-list li {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        .contact-info-icon {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+        .contact-info-list strong {
+            display: block;
+            margin-bottom: 3px;
+        }
+        .contact-info-list span, .contact-info-list a {
+            color: #555;
+            text-decoration: none;
+        }
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid #d5d5d5;
+            border-radius: 5px;
+            font-family: var(--font-body);
+            font-size: 15px;
+            background-color: var(--bg-color);
+        }
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 1px;
+        }
+        .contact-form textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        .contact-form button {
+            align-self: flex-start;
+        }
+
+        /* --- FOOTER --- */
+        .footer {
+            background-color: var(--text-main);
+            color: #d8d8d8;
+            padding: 50px 5% 20px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .footer-grid h4 {
+            color: #ffffff;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .footer-grid p, .footer-grid a {
+            color: #b8b8b8;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .footer-grid a:hover {
+            color: #ffffff;
+        }
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.15);
+            padding-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+        }
+
+        /* --- MOBİL UYUM --- */
+        @media (max-width: 900px) {
+            .about-grid, .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            .top-bar { justify-content: center; flex-direction: column; align-items: center; gap: 5px; }
+            .header { flex-wrap: wrap; }
+            .menu-toggle { display: flex; }
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                gap: 15px;
+                padding-top: 15px;
+                order: 3;
+            }
+            .nav-links.open { display: flex; }
+            .nav-links .btn-wizard { width: 100%; }
+            .hero-title { font-size: 42px; }
+            .hero { padding: 60px 5%; text-align: center; align-items: center; }
+            .hero-slogan { border-left: none; border-bottom: 4px solid var(--accent-blue); padding-left: 0; padding-bottom: 10px; }
+            .hero-actions { justify-content: center; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Açılış Animasyonu (Preloader) -->
+    <div class="preloader">
+        <div class="preloader-bg-top"></div>
+        <div class="preloader-bg-bottom"></div>
+        <div class="preloader-logo">
+            <img src="logo.jpg" alt="Fibar Hidrolik Açılış Logosu">
+        </div>
+    </div>
+
+    <!-- Üst İletişim Barı -->
+    <div class="top-bar">
+        <a href="tel:03120000000">0312 XXX XX XX</a>
+        <a href="mailto:fibarhidrolik@fibar.com.tr">fibarhidrolik@fibar.com.tr</a>
+    </div>
+
+    <!-- Navigasyon Menüsü -->
+    <header class="header">
+        <a href="#" class="logo">
+            <img src="logo.jpg" alt="Fibar Hidrolik Logo">
+        </a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Menüyü aç/kapat" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
+        <nav class="nav-links" id="navLinks">
+            <a href="#">Anasayfa</a>
+            <a href="#kurumsal">Kurumsal</a>
+            <a href="#urunler">Ürünler</a>
+            <a href="#calismalarimiz">Çalışmalarımız</a>
+            <a href="#iletisim">İletişim</a>
+            <a href="hortum-sihirbazi.html" target="_blank" class="btn-wizard">Doğru Hortumu Bul</a>
+        </nav>
+    </header>
+
+    <!-- Kahraman (Hero) Alanı -->
+    <section class="hero">
+        <div class="hero-subtitle">Endüstriyel Çözüm Ortağınız</div>
+        <h1 class="hero-title">FIBAR<br>HİDROLİK</h1>
+        <div class="hero-slogan">Güç Kontrol Altında</div>
+        <div class="hero-actions">
+            <a href="hortum-sihirbazi.html" target="_blank" class="btn-solid">Doğru Hortumu Bul</a>
+            <a href="#iletisim" class="btn-outline">Teklif Al</a>
+        </div>
+    </section>
+
+    <!-- Hizmetler Alanı -->
+    <section class="services-section" id="hizmetler">
+        <div class="section-header">
+            <h2>Uzmanlık Alanlarımız</h2>
+            <p>Endüstriyel standartlarda, yüksek dayanımlı ve güvenilir çözümler üretiyoruz.</p>
+        </div>
+
+        <div class="services-grid">
+            <div class="service-card">
+                <h3>Hidrolik Hortum İmalatı</h3>
+                <p>İhtiyaca uygun ölçü ve basınç değerlerinde, uzun ömürlü hidrolik hortum üretimi ve değişimi.</p>
+            </div>
+            <div class="service-card">
+                <h3>Soket Montajı ve Presleme</h3>
+                <p>Tam sızdırmazlık garantili, profesyonel rekor, başlık ve soket presleme işlemleri.</p>
+            </div>
+            <div class="service-card">
+                <h3>Sistem Test ve Bakımı</h3>
+                <p>Mevcut hidrolik hatların basınç testleri ve yerinde düzenli periyodik bakım hizmetleri.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Kurumsal -->
+    <section class="about-section" id="kurumsal">
+        <div class="about-grid">
+            <div>
+                <h2>Kurumsal</h2>
+                <p>Fibar Hidrolik olarak, endüstriyel hidrolik sistemler alanında yüksek kaliteli üretim ve hızlı çözüm anlayışıyla hizmet veriyoruz. Sahadaki tecrübemizi mühendislik bilgisiyle birleştirerek müşterilerimize kesintisiz üretim süreçleri sunuyoruz.</p>
+                <p>Amacımız; hidrolik hortum, rekor ve sistem bakımı konusunda sektördeki işletmelerin güvenilir çözüm ortağı olmaktır. Kalite kontrolden sevkiyata kadar her aşamada titizlikle çalışıyoruz.</p>
+            </div>
+            <div class="about-stats">
+                <div class="stat-card">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Yıllık Tecrübe</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Tamamlanan Proje</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Acil Servis Desteği</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">%100</div>
+                    <div class="stat-label">Test Edilmiş Ürün</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ürünler -->
+    <section class="products-section" id="urunler">
+        <div class="section-header">
+            <h2>Ürünlerimiz</h2>
+            <p>Farklı basınç ve ortam koşullarına uygun geniş ürün yelpazesi.</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-icon">H</div>
+                <h3>Hidrolik Hortumlar</h3>
+                <p>SAE standartlarında, düşük ve yüksek basınçlı hortum çeşitleri.</p>
+            </div>
+            <div class="product-card">
+                <div class="product-icon">R</div>
+                <h3>Rekor ve Adaptörler</h3>
+                <p>Her sisteme uygun bağlantı elemanları ve adaptör çeşitleri.</p>
+            </div>
+            <div class="product-card">
+                <div class="product-icon">S</div>
+                <h3>Hidrolik Silindirler</h3>
+                <p>Özel imalat ve standart ölçülerde hidrolik silindir çözümleri.</p>
+            </div>
+            <div class="product-card">
+                <div class="product-icon">G</div>
+                <h3>Güç Üniteleri</h3>
+                <p>Endüstriyel makinelere uygun hidrolik güç ünitesi seçenekleri.</p>
+            </div>
+            <div class="product-card">
+                <div class="product-icon">F</div>
+                <h3>Filtre ve Yağlar</h3>
+                <p>Sistem ömrünü uzatan filtre elemanları ve hidrolik yağlar.</p>
+            </div>
+            <div class="product-card">
+                <div class="product-icon">Y</div>
+                <h3>Yedek Parçalar</h3>
+                <p>Bakım ve onarım için orijinal ve muadil yedek parça temini.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Çalışmalarımız -->
+    <section class="work-section" id="calismalarimiz">
+        <div class="section-header">
+            <h2>Çalışmalarımız</h2>
+            <p>Farklı sektörlerden müşterilerimiz için tamamladığımız projelerden örnekler.</p>
+        </div>
+        <div class="work-grid">
+            <div class="work-card">
+                <div class="work-card-image">İnşaat Makineleri<br>Hidrolik Hattı Yenileme</div>
+                <div class="work-card-body">
+                    <h3>Ekskavatör Hortum Değişimi</h3>
+                    <p>Sahada yerinde ölçüm, üretim ve montaj ile 4 saat içinde tamamlandı.</p>
+                </div>
+            </div>
+            <div class="work-card">
+                <div class="work-card-image">Fabrika<br>Preslerin Bakımı</div>
+                <div class="work-card-body">
+                    <h3>Periyodik Sistem Bakımı</h3>
+                    <p>Üretim hattındaki hidrolik preslerde planlı bakım ve basınç testi.</p>
+                </div>
+            </div>
+            <div class="work-card">
+                <div class="work-card-image">Tarım Makineleri<br>Özel İmalat</div>
+                <div class="work-card-body">
+                    <h3>Özel Ölçü Hortum İmalatı</h3>
+                    <p>Standart dışı ölçülerde özel hortum ve rekor üretimi.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- İletişim -->
+    <section class="contact-section" id="iletisim">
+        <div class="section-header">
+            <h2>İletişim</h2>
+            <p>Sorularınız ve teklif talepleriniz için bize ulaşın.</p>
+        </div>
+        <div class="contact-grid">
+            <ul class="contact-info-list">
+                <li>
+                    <div class="contact-info-icon">T</div>
+                    <div>
+                        <strong>Telefon</strong>
+                        <a href="tel:03120000000">0312 XXX XX XX</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="contact-info-icon">E</div>
+                    <div>
+                        <strong>E-posta</strong>
+                        <a href="mailto:fibarhidrolik@fibar.com.tr">fibarhidrolik@fibar.com.tr</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="contact-info-icon">A</div>
+                    <div>
+                        <strong>Adres</strong>
+                        <span>Organize Sanayi Bölgesi, Ankara / Türkiye</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="contact-info-icon">S</div>
+                    <div>
+                        <strong>Çalışma Saatleri</strong>
+                        <span>Pazartesi - Cumartesi, 08:00 - 18:00</span>
+                    </div>
+                </li>
+            </ul>
+            <form class="contact-form" onsubmit="return false;">
+                <div class="form-row">
+                    <input type="text" name="name" placeholder="Ad Soyad" required>
+                    <input type="tel" name="phone" placeholder="Telefon" required>
+                </div>
+                <input type="email" name="email" placeholder="E-posta" required>
+                <textarea name="message" placeholder="Talebinizi yazın..." required></textarea>
+                <button type="submit" class="btn-solid" style="border:none; cursor:pointer;">Gönder</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h4>Fibar Hidrolik</h4>
+                <p>Endüstriyel hidrolik sistemler için üretim, montaj ve bakım hizmetleri.</p>
+            </div>
+            <div>
+                <h4>Kurumsal</h4>
+                <a href="#kurumsal">Hakkımızda</a>
+                <a href="#urunler">Ürünler</a>
+                <a href="#calismalarimiz">Çalışmalarımız</a>
+            </div>
+            <div>
+                <h4>Hizmetler</h4>
+                <a href="#hizmetler">Hortum İmalatı</a>
+                <a href="#hizmetler">Soket Montajı</a>
+                <a href="#hizmetler">Sistem Bakımı</a>
+                <a href="hortum-sihirbazi.html" target="_blank">Hortum Sihirbazı</a>
+            </div>
+            <div>
+                <h4>İletişim</h4>
+                <a href="tel:03120000000">0312 XXX XX XX</a>
+                <a href="mailto:fibarhidrolik@fibar.com.tr">fibarhidrolik@fibar.com.tr</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; <span id="year"></span> Fibar Hidrolik. Tüm hakları saklıdır.
+        </div>
+    </footer>
+
+    <script>
+        // Mobil menü aç/kapat
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        menuToggle.addEventListener('click', () => {
+            const isOpen = navLinks.classList.toggle('open');
+            menuToggle.classList.toggle('active', isOpen);
+            menuToggle.setAttribute('aria-expanded', isOpen);
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('open');
+                menuToggle.classList.remove('active');
+                menuToggle.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+
+</body>
+</html>
