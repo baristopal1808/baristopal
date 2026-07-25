@@ -4,6 +4,34 @@ Bu dosya, farklı bilgisayarlardan bu projeye Claude Code ile bağlanıldığın
 kaldığımız yerden devam edebilmek için tutulur. Git ile senkronize olur
 (`git pull` ile her cihazda güncel kalır).
 
+Not: Bu dosya sohbetin birebir dökümünü tutmaz (pratik değil). Bunun yerine
+"Son Konuşma Özeti" bölümü her oturum sonunda güncellenir ve o oturumda
+neyi konuştuğumuzu, hangi kararları aldığımızı ve sırada ne olduğunu özetler
+— böylece başka bir cihazda açtığınızda sıfırdan değil, kaldığımız yerden
+devam ederiz.
+
+## Son Konuşma Özeti (Devam Notu)
+
+**Tarih:** 2026-07-25
+
+Bu oturumda `hortum-sihirbazi.html` sıfırdan gerçek katalog verisiyle
+genişletildi (bkz. İlerleme Kaydı'ndaki ilgili madde) ve GitHub'a push
+edildi. Ardından kullanıcı, çoklu bilgisayarlı çalışma düzeninde Claude'un
+"hafızası" nasıl işliyor diye sordu. Netleşen durum:
+
+- Cihazlar arası süreklilik bu dosya (CLAUDE.md) üzerinden sağlanıyor —
+  git ile senkronize, her oturumda otomatik okunuyor.
+- Claude'un kendi (`~/.claude/.../memory`) hafızası cihaza özel, senkronize
+  OLMUYOR — sadece bu bilgisayarda iş yaparken yardımcı, proje sürekliliği
+  için güvenilmemeli.
+- Kullanıcı sohbetin "en son ne konuşulduğunu" başka cihazda da görmek
+  istiyor → çözüm olarak bu "Son Konuşma Özeti" bölümü eklendi, her oturum
+  sonunda üzerine yazılacak (üstteki içerik silinip yenisiyle değiştirilir).
+
+**Sırada ne var:** Açık bir görev yok, kullanıcı onay bekliyor / yeni istek
+verebilir. `logo.jpg`/`.logo.jpg` ve `BARISTOPAL-CALISMALAR` dosyalarının
+akıbeti hâlâ netleşmedi (bkz. Dosyalar bölümü).
+
 ## Proje Nedir
 
 Fibar Hidrolik adlı firma için statik (framework'süz) kurumsal tanıtım
