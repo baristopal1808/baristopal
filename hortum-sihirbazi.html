@@ -49,7 +49,7 @@
         .back-link:hover { color: var(--accent-blue); }
 
         .wizard-wrap {
-            max-width: 760px;
+            max-width: 880px;
             margin: 0 auto;
             padding: 50px 5% 80px;
         }
@@ -202,6 +202,99 @@
             border-radius: 8px;
             padding: 16px;
         }
+        .field.dynamic .field-nested {
+            margin-top: 14px;
+            margin-bottom: 0;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+        }
+        .checkbox-label.is-disabled {
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        /* Adım 2 iki kolonlu düzen: sol form alanları, sağ hortum görseli */
+        .step2-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+        .step2-layout.has-hose-panel {
+            grid-template-columns: minmax(0, 1fr) 230px;
+        }
+        .hose-preview { display: none; }
+        .step2-layout.has-hose-panel .hose-preview {
+            display: block;
+            position: sticky;
+            top: 24px;
+        }
+        .hose-preview-card {
+            background: linear-gradient(165deg, rgba(43,108,176,0.07), rgba(43,108,176,0.015));
+            border: 1px solid rgba(43,108,176,0.16);
+            border-radius: 14px;
+            padding: 26px 18px;
+            min-height: 210px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-align: center;
+            overflow: hidden;
+        }
+        .hose-preview-art {
+            width: 100%;
+            color: var(--accent-blue);
+            opacity: 0;
+            transform: translateY(6px) scale(0.95);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .hose-preview-art.visible { opacity: 1; transform: translateY(0) scale(1); }
+        .hose-preview-art svg { width: 100%; height: auto; display: block; }
+        .hose-preview-placeholder {
+            color: #9aa08f;
+            font-size: 12.5px;
+            line-height: 1.5;
+            opacity: 0.85;
+        }
+        .hose-preview-caption {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-main);
+            opacity: 0;
+            transition: opacity 0.35s ease 0.05s;
+        }
+        .hose-preview-caption.visible { opacity: 1; }
+        .hose-preview-sub {
+            font-size: 12px;
+            color: #6b7280;
+            opacity: 0;
+            transition: opacity 0.35s ease 0.05s;
+        }
+        .hose-preview-sub.visible { opacity: 1; }
+
+        @media (max-width: 860px) {
+            .step2-layout.has-hose-panel { grid-template-columns: 1fr; }
+            .step2-layout.has-hose-panel .hose-preview { position: static; }
+            .hose-preview-card { min-height: 0; padding: 20px 18px; }
+        }
 
         .wizard-nav {
             display: flex;
@@ -257,6 +350,7 @@
         }
         .result-summary dt { font-weight: 600; }
         .result-summary dd { color: #333; }
+        .hose-type-name { font-weight: 700; }
         .result-actions {
             display: flex;
             gap: 14px;
@@ -274,6 +368,18 @@
             text-decoration: underline;
             cursor: pointer;
         }
+        .support-fallback {
+            text-align: center;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #eee;
+        }
+        .support-fallback a {
+            font-size: 13.5px;
+            color: #777;
+            text-decoration: underline;
+        }
+        .support-fallback a:hover { color: var(--accent-blue); }
 
         @media (max-width: 600px) {
             .wizard-card { padding: 30px 20px; }
@@ -295,7 +401,7 @@
     <div class="wizard-wrap">
         <div class="wizard-intro">
             <h1>Doğru Hortumu Bul</h1>
-            <p>3 kısa adımda ihtiyacınıza uygun hortum, başlık ve soket kombinasyonunu birlikte belirleyelim.</p>
+            <p>4 kısa adımda ihtiyacınıza uygun hortum, başlık ve soket kombinasyonunu birlikte belirleyelim.</p>
         </div>
 
         <div class="progress-track" id="progressTrack"></div>
@@ -304,7 +410,7 @@
             <form id="wizardForm">
                 <!-- Adım 1: Kullanım Alanı -->
                 <div class="step active" data-step="1">
-                    <div class="step-label">Adım 1 / 3</div>
+                    <div class="step-label">Adım 1 / 4</div>
                     <h2>Hortumun kullanım alanı nedir?</h2>
                     <div class="option-grid-3" data-field="usage">
                         <div class="option-card-lg" data-value="hidrolik-yakit">
@@ -353,55 +459,129 @@
 
                 <!-- Adım 2: Teknik Özellikler -->
                 <div class="step" data-step="2">
-                    <div class="step-label">Adım 2 / 3</div>
+                    <div class="step-label">Adım 2 / 4</div>
                     <h2>Teknik özellikler</h2>
 
+                    <div class="step2-layout" id="step2Layout">
+                    <div class="step2-fields">
                     <div class="field-row">
-                        <div class="field">
-                            <label for="pressure">Çalışma Basıncı (bar)</label>
-                            <input type="number" id="pressure" min="0" step="1" placeholder="Örn: 250" required>
-                        </div>
                         <div class="field">
                             <label for="diameter">Hortum Çapı</label>
                             <select id="diameter" required>
                                 <option value="" disabled selected>Seçiniz</option>
+                                <option value='1/8"'>1/8"</option>
+                                <option value='3/16"'>3/16"</option>
                                 <option value='1/4"'>1/4"</option>
+                                <option value='5/16"'>5/16"</option>
                                 <option value='3/8"'>3/8"</option>
+                                <option value='13/32"'>13/32"</option>
                                 <option value='1/2"'>1/2"</option>
                                 <option value='5/8"'>5/8"</option>
                                 <option value='3/4"'>3/4"</option>
+                                <option value='7/8"'>7/8"</option>
                                 <option value='1"'>1"</option>
+                                <option value='1.1/8"'>1.1/8"</option>
                                 <option value='1.1/4"'>1.1/4"</option>
+                                <option value='1.3/8"'>1.3/8"</option>
                                 <option value='1.1/2"'>1.1/2"</option>
+                                <option value='1.13/16"'>1.13/16"</option>
                                 <option value='2"'>2"</option>
+                                <option value='2.3/8"'>2.3/8"</option>
+                                <option value='2.1/2"'>2.1/2"</option>
+                                <option value='3"'>3"</option>
+                                <option value='3.1/2"'>3.1/2"</option>
+                                <option value='4"'>4"</option>
+                                <optgroup label="İkiz Hatlar">
+                                    <option value='1/4"x1/4"'>1/4" x 1/4"</option>
+                                    <option value='5/16"x5/16"'>5/16" x 5/16"</option>
+                                    <option value='3/8"x3/8"'>3/8" x 3/8"</option>
+                                    <option value='1/2"x1/2"'>1/2" x 1/2"</option>
+                                </optgroup>
                             </select>
                         </div>
+                        <div class="field">
+                            <label for="pressure">Çalışma Basıncı (bar)</label>
+                            <input type="number" id="pressure" min="0" step="1" placeholder="Örn: 250" required>
+                        </div>
+                    </div>
+
+                    <div class="field dynamic hidden" id="hoseTypeField">
+                        <label for="hoseType">Hortum Tipi</label>
+                        <select id="hoseType">
+                            <option value="" disabled selected>Önce çapı seçin</option>
+                        </select>
+                    </div>
+
+                    <div class="field dynamic hidden" id="highTempField">
+                        <label class="checkbox-label" id="highTempLabel" for="highTemp">
+                            <input type="checkbox" id="highTemp" disabled>
+                            Yüksek Sıcaklığa Dayanıklı (135°C)
+                        </label>
                     </div>
 
                     <div class="field">
                         <label for="length">Metraj (cm)</label>
                         <input type="number" id="length" min="1" step="1" placeholder="Örn: 500" required>
                     </div>
+                    </div>
+
+                    <aside class="hose-preview" id="hosePreview">
+                        <div class="hose-preview-card">
+                            <div class="hose-preview-art" id="hosePreviewArt"></div>
+                            <div class="hose-preview-caption" id="hosePreviewCaption"></div>
+                            <div class="hose-preview-sub" id="hosePreviewSub"></div>
+                        </div>
+                    </aside>
+                    </div>
+                </div>
+
+                <!-- Adım 3: Başlık ve Açı Bilgileri -->
+                <div class="step" data-step="3">
+                    <div class="step-label">Adım 3 / 4</div>
+                    <h2>Başlık ve açı bilgileri</h2>
 
                     <div class="field-row">
                         <div class="field">
-                            <label for="head1">1. Başlık Tipi</label>
+                            <label for="head1">1. Uç Başlık Tipi</label>
                             <select id="head1" required>
                                 <option value="" disabled selected>Seçiniz</option>
-                                <option value="r1">R1 – Düz Başlık (Standart)</option>
-                                <option value="r2">R2 – 45° Açılı Başlık</option>
-                                <option value="r3">R3 – 90° Açılı Başlık</option>
-                                <option value="r4">R4 – Flanşlı Düz Başlık</option>
+                                <option value="bsp">BSP</option>
+                                <option value="metrik">METRİK</option>
+                                <option value="npt">NPT</option>
+                                <option value="unf">UNF</option>
+                                <option value="jic">JIC</option>
                             </select>
                         </div>
                         <div class="field">
-                            <label for="head2">2. Başlık Tipi</label>
+                            <label for="head1Angle">1. Uç Açısı</label>
+                            <select id="head1Angle" required>
+                                <option value="" disabled selected>Seçiniz</option>
+                                <option value="0">0° (Düz)</option>
+                                <option value="45">45°</option>
+                                <option value="90">90°</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="head2">2. Uç Başlık Tipi</label>
                             <select id="head2" required>
                                 <option value="" disabled selected>Seçiniz</option>
-                                <option value="r1">R1 – Düz Başlık (Standart)</option>
-                                <option value="r2">R2 – 45° Açılı Başlık</option>
-                                <option value="r3">R3 – 90° Açılı Başlık</option>
-                                <option value="r4">R4 – Flanşlı Düz Başlık</option>
+                                <option value="bsp">BSP</option>
+                                <option value="metrik">METRİK</option>
+                                <option value="npt">NPT</option>
+                                <option value="unf">UNF</option>
+                                <option value="jic">JIC</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="head2Angle">2. Uç Açısı</label>
+                            <select id="head2Angle" required>
+                                <option value="" disabled selected>Seçiniz</option>
+                                <option value="0">0° (Düz)</option>
+                                <option value="45">45°</option>
+                                <option value="90">90°</option>
                             </select>
                         </div>
                     </div>
@@ -410,17 +590,16 @@
                         <label for="bendAngle">Basma Açısı Nedir?</label>
                         <select id="bendAngle">
                             <option value="" disabled selected>Seçiniz</option>
-                            <option value="22°">22°</option>
-                            <option value="30°">30°</option>
-                            <option value="45°">45°</option>
-                            <option value="60°">60°</option>
-                            <option value="90°">90°</option>
                         </select>
+                        <div class="field field-nested hidden" id="bendAngleCustomField">
+                            <label for="bendAngleCustom">Açıyı kendiniz belirtin (derece)</label>
+                            <input type="number" id="bendAngleCustom" min="1" max="359" step="1" placeholder="Örn: 60">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Adım 3: Sonuç ve Teklif -->
-                <div class="step" data-step="3">
+                <!-- Adım 4: Sonuç ve Teklif -->
+                <div class="step" data-step="4">
                     <span class="result-badge">Teklif Özeti</span>
                     <h2 class="result-title">Talebiniz Hazır</h2>
                     <p class="result-desc">Aşağıdaki bilgilerle ekibimiz size en uygun teklifi hazırlayacaktır.</p>
@@ -441,21 +620,30 @@
                 <button type="button" class="btn btn-ghost" id="prevBtn">Geri</button>
                 <button type="button" class="btn btn-primary" id="nextBtn" disabled>İleri</button>
             </div>
+
+            <div class="support-fallback">
+                <a href="index.html#iletisim">Emin değilim, teknik destek almak istiyorum</a>
+            </div>
         </div>
     </div>
 
     <script>
-        const steps = ['1', '2', '3'];
+        const steps = ['1', '2', '3', '4'];
         let currentIndex = 0;
 
         const answers = {
             usage: null,
             pressure: '',
             diameter: '',
+            hoseType: '',
+            highTemp: false,
             length: '',
             head1: '',
+            head1Angle: '',
             head2: '',
-            bendAngle: ''
+            head2Angle: '',
+            bendAngle: '',
+            bendAngleCustom: ''
         };
 
         const usageLabels = {
@@ -464,11 +652,100 @@
             gida: 'Gıda'
         };
 
+        // Kaynak: SEL Hidrolik Hortumlar kataloğu (Votek), sayfa 3-5.
+        // Marka adları kaldırıldı, sadece kısa standart/tip kodu gösteriliyor.
+        // Sıcaklık varyantları (135°C vb.) ayrı satır değil, aynı satırda birleştirildi.
+        // "cb" = o çaptaki maksimum çalışma basıncı (bar); basınca göre filtrelemede kullanılır.
+        // "visual" = sağ panelde gösterilecek şematik çizim ailesi.
+        const hydraulicHoseTypes = [
+            { id: 'r1-1sn', label: 'SAE 100 R1 AT', visual: 'braid-1', hasHighTemp: true, diameters: [
+                {size:'3/16"',cb:250},{size:'1/4"',cb:225},{size:'5/16"',cb:215},{size:'3/8"',cb:180},{size:'1/2"',cb:160},{size:'5/8"',cb:130},{size:'3/4"',cb:105},{size:'1"',cb:88},{size:'1.1/4"',cb:63},{size:'1.1/2"',cb:50},{size:'2"',cb:40},{size:'2.1/2"',cb:40},{size:'3"',cb:35}
+            ] },
+            { id: 'r2at-2sn', label: 'SAE 100 R2 AT', visual: 'braid-2', hasHighTemp: true, diameters: [
+                {size:'3/16"',cb:415},{size:'1/4"',cb:400},{size:'5/16"',cb:350},{size:'3/8"',cb:330},{size:'1/2"',cb:275},{size:'5/8"',cb:250},{size:'3/4"',cb:215},{size:'1"',cb:165},{size:'1.1/4"',cb:125},{size:'1.1/2"',cb:90},{size:'2"',cb:78},{size:'2.1/2"',cb:69},{size:'3"',cb:50}
+            ] },
+            { id: '1sc', label: 'DIN-EN 857 1SC', visual: 'braid-1', diameters: [
+                {size:'1/4"',cb:225},{size:'5/16"',cb:215},{size:'3/8"',cb:180},{size:'1/2"',cb:160},{size:'5/8"',cb:130},{size:'3/4"',cb:105},{size:'1"',cb:88}
+            ] },
+            { id: '2sc', label: 'DIN-EN 857 2SC', visual: 'braid-2', diameters: [
+                {size:'1/4"',cb:400},{size:'5/16"',cb:350},{size:'3/8"',cb:330},{size:'1/2"',cb:275},{size:'5/8"',cb:250},{size:'3/4"',cb:215},{size:'1"',cb:165}
+            ] },
+            { id: '1sc-ikiz', label: '1SC İkiz', visual: 'twin', diameters: [
+                {size:'1/4"x1/4"',cb:225},{size:'5/16"x5/16"',cb:215},{size:'3/8"x3/8"',cb:180},{size:'1/2"x1/2"',cb:160}
+            ] },
+            { id: '2sc-ikiz', label: '2SC İkiz', visual: 'twin', diameters: [
+                {size:'1/4"x1/4"',cb:400},{size:'5/16"x5/16"',cb:350},{size:'3/8"x3/8"',cb:330},{size:'1/2"x1/2"',cb:275}
+            ] },
+            { id: '4sp', label: 'TS EN 856 4SP', visual: 'spiral-heavy', diameters: [
+                {size:'1/4"',cb:450},{size:'3/8"',cb:445},{size:'1/2"',cb:415},{size:'5/8"',cb:350},{size:'3/4"',cb:350},{size:'1"',cb:280}
+            ] },
+            { id: '4sh', label: 'TS EN 856 4SH', visual: 'spiral-heavy', diameters: [
+                {size:'3/4"',cb:420},{size:'1"',cb:380},{size:'1.1/4"',cb:350},{size:'1.1/2"',cb:290},{size:'2"',cb:250}
+            ] },
+            { id: '2sc-compact', label: '2SC Compact', visual: 'braid-2', diameters: [
+                {size:'1/4"',cb:450},{size:'5/16"',cb:420},{size:'3/8"',cb:385},{size:'1/2"',cb:345},{size:'5/8"',cb:290},{size:'3/4"',cb:280},{size:'1"',cb:200}
+            ] },
+            { id: 'x5000', label: 'X-5000+', visual: 'spiral-compact', diameters: [
+                {size:'3/8"',cb:350},{size:'1/2"',cb:350},{size:'5/8"',cb:350},{size:'3/4"',cb:350},{size:'1"',cb:350},{size:'1.1/4"',cb:350}
+            ] },
+            { id: 'x6000', label: 'X-6000+', visual: 'spiral-compact', diameters: [
+                {size:'3/8"',cb:420},{size:'1/2"',cb:420},{size:'5/8"',cb:420},{size:'3/4"',cb:420},{size:'1"',cb:420},{size:'1.1/4"',cb:420}
+            ] },
+            { id: 'r5', label: 'SAE J517 R5', visual: 'braid-1', diameters: [
+                {size:'3/16"',cb:210},{size:'1/4"',cb:210},{size:'5/16"',cb:157},{size:'13/32"',cb:140},{size:'1/2"',cb:122},{size:'5/8"',cb:105},{size:'7/8"',cb:56},{size:'1.1/8"',cb:43},{size:'1.3/8"',cb:35},{size:'1.13/16"',cb:24},{size:'2.3/8"',cb:24}
+            ] },
+            { id: 'r6', label: 'SAE 100 R6', visual: 'braid-1', diameters: [
+                {size:'3/16"',cb:34},{size:'1/4"',cb:28},{size:'5/16"',cb:28},{size:'3/8"',cb:28},{size:'1/2"',cb:28},{size:'5/8"',cb:24},{size:'3/4"',cb:21},{size:'1"',cb:20}
+            ] },
+            { id: 'r3', label: 'SAE 100 R3', visual: 'braid-2', diameters: [
+                {size:'3/16"',cb:103},{size:'1/4"',cb:86},{size:'5/16"',cb:83},{size:'3/8"',cb:78},{size:'1/2"',cb:69},{size:'5/8"',cb:60},{size:'3/4"',cb:52},{size:'1"',cb:39},{size:'1.1/4"',cb:26},{size:'1.1/2"',cb:20}
+            ] },
+            { id: 'r4x', label: 'SAE J517 R4', visual: 'wide-bore', diameters: [
+                {size:'3/4"',cb:21},{size:'1"',cb:17},{size:'1.1/4"',cb:14},{size:'1.1/2"',cb:10},{size:'2"',cb:7},{size:'2.1/2"',cb:4},{size:'3"',cb:4},{size:'3.1/2"',cb:3},{size:'4"',cb:2}
+            ] },
+            { id: 'fren-hidrolik', label: 'SAE J1401', visual: 'brake', diameters: [
+                {size:'1/8"',cb:276},{size:'3/16"',cb:276}
+            ] },
+            { id: 'fren-hava', label: 'SAE J1402', visual: 'brake', diameters: [
+                {size:'3/8"',cb:20.7},{size:'1/2"',cb:20.7},{size:'5/8"',cb:20.7}
+            ] }
+        ];
+
+        // Sağ paneldeki hortum kesiti çizimleri: basit, tek renkli çizgi sanatı
+        // (sitedeki kart ikonlarıyla aynı üslup), yapı ailesine göre gruplanmış.
+        function hoseSvgShell(inner) {
+            return '<svg viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'
+                + '<rect x="2" y="26" width="20" height="28" rx="4"/>'
+                + '<rect x="138" y="26" width="20" height="28" rx="4"/>'
+                + '<rect x="20" y="22" width="120" height="36" rx="18"/>'
+                + inner
+                + '</svg>';
+        }
+        const hoseVisuals = {
+            'braid-1': hoseSvgShell('<path d="M36 22 L52 58 M52 22 L68 58 M68 22 L84 58 M84 22 L100 58 M100 22 L116 58 M116 22 L124 58" stroke-width="1.4" opacity="0.55"/>'),
+            'braid-2': hoseSvgShell('<path d="M34 22 L48 58 M48 22 L62 58 M62 22 L76 58 M76 22 L90 58 M90 22 L104 58 M104 22 L118 58 M118 22 L126 58" stroke-width="1.5" opacity="0.65"/><path d="M40 58 L54 22 M54 58 L68 22 M68 58 L82 22 M82 58 L96 22 M96 58 L110 22 M110 58 L120 22" stroke-width="1.5" opacity="0.4"/>'),
+            'twin': '<svg viewBox="0 0 160 90" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'
+                + '<rect x="2" y="12" width="18" height="20" rx="3"/><rect x="140" y="12" width="18" height="20" rx="3"/>'
+                + '<rect x="2" y="58" width="18" height="20" rx="3"/><rect x="140" y="58" width="18" height="20" rx="3"/>'
+                + '<rect x="18" y="8" width="124" height="28" rx="14"/><rect x="18" y="54" width="124" height="28" rx="14"/>'
+                + '<line x1="80" y1="36" x2="80" y2="54" stroke-width="2" opacity="0.5"/>'
+                + '</svg>',
+            'spiral-heavy': hoseSvgShell('<path d="M24 40 Q40 20 56 40 T88 40 T120 40 T140 40" stroke-width="2.4" opacity="0.75"/><path d="M24 40 Q40 60 56 40 T88 40 T120 40 T140 40" stroke-width="2.4" opacity="0.5"/>'),
+            'spiral-compact': hoseSvgShell('<path d="M28 40 Q48 24 68 40 T108 40 T136 40" stroke-width="1.6" opacity="0.6"/>'),
+            'wide-bore': hoseSvgShell('<rect x="24" y="26" width="112" height="28" rx="14" stroke-width="1.4" opacity="0.5"/><path d="M40 24 L54 56 M64 24 L78 56 M88 24 L102 56 M108 24 L120 56" stroke-width="1.3" opacity="0.5"/>'),
+            'brake': '<svg viewBox="0 0 160 60" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+                + '<rect x="6" y="20" width="14" height="20" rx="3"/><rect x="140" y="20" width="14" height="20" rx="3"/>'
+                + '<rect x="20" y="24" width="120" height="12" rx="6"/>'
+                + '<path d="M34 24 L40 36 M50 24 L56 36 M66 24 L72 36 M82 24 L88 36 M98 24 L104 36 M114 24 L120 36" stroke-width="1" opacity="0.5"/>'
+                + '</svg>'
+        };
+
         const headTypeInfo = {
-            r1: { label: 'R1 – Düz Başlık (Standart)', angled: false, socket: 'R1 Soket' },
-            r2: { label: 'R2 – 45° Açılı Başlık', angled: true, socket: 'R2 Soket' },
-            r3: { label: 'R3 – 90° Açılı Başlık', angled: true, socket: 'R3 Soket' },
-            r4: { label: 'R4 – Flanşlı Düz Başlık', angled: false, socket: 'R4 Soket' }
+            bsp: { label: 'BSP', socket: 'BSP Soket' },
+            metrik: { label: 'METRİK', socket: 'Metrik Soket' },
+            npt: { label: 'NPT', socket: 'NPT Soket' },
+            unf: { label: 'UNF', socket: 'UNF Soket' },
+            jic: { label: 'JIC', socket: 'JIC Soket' }
         };
 
         const progressTrack = document.getElementById('progressTrack');
@@ -485,6 +762,30 @@
         const wizardNav = document.getElementById('wizardNav');
         const bendAngleField = document.getElementById('bendAngleField');
         const bendAngleSelect = document.getElementById('bendAngle');
+        const bendAngleCustomField = document.getElementById('bendAngleCustomField');
+        const bendAngleCustomInput = document.getElementById('bendAngleCustom');
+        const head1AngleSelect = document.getElementById('head1Angle');
+        const head2AngleSelect = document.getElementById('head2Angle');
+
+        // Basma açısı: 0°'den 360°'ye 45°'nin katlarıyla seçenekler, artı ara
+        // açılar için "kendim belirtmek istiyorum" serbest giriş seçeneği.
+        (function populateBendAngleOptions() {
+            let options = '<option value="" disabled selected>Seçiniz</option>';
+            for (let angle = 0; angle <= 360; angle += 45) {
+                options += `<option value="${angle}°">${angle}°</option>`;
+            }
+            options += '<option value="custom">Kendim belirtmek istiyorum</option>';
+            bendAngleSelect.innerHTML = options;
+        })();
+        const hoseTypeField = document.getElementById('hoseTypeField');
+        const hoseTypeSelect = document.getElementById('hoseType');
+        const highTempField = document.getElementById('highTempField');
+        const highTempCheckbox = document.getElementById('highTemp');
+        const highTempLabel = document.getElementById('highTempLabel');
+        const step2Layout = document.getElementById('step2Layout');
+        const hosePreviewArt = document.getElementById('hosePreviewArt');
+        const hosePreviewCaption = document.getElementById('hosePreviewCaption');
+        const hosePreviewSub = document.getElementById('hosePreviewSub');
 
         function showStep(index) {
             stepEls.forEach(el => el.classList.remove('active'));
@@ -493,7 +794,7 @@
 
             prevBtn.disabled = index === 0;
 
-            if (steps[index] === '3') {
+            if (steps[index] === '4') {
                 wizardNav.style.display = 'none';
                 buildResult();
             } else {
@@ -508,9 +809,126 @@
         }
 
         function bendAngleRequired() {
-            const h1 = headTypeInfo[answers.head1];
-            const h2 = headTypeInfo[answers.head2];
-            return !!(h1 && h2 && h1.angled && h2.angled);
+            return !!(answers.head1Angle && answers.head1Angle !== '0' && answers.head2Angle && answers.head2Angle !== '0');
+        }
+
+        function bendAngleValid() {
+            if (!answers.bendAngle) return false;
+            if (answers.bendAngle === 'custom') return answers.bendAngleCustom !== '';
+            return true;
+        }
+
+        function bendAngleDisplayText() {
+            return answers.bendAngle === 'custom' ? `${answers.bendAngleCustom}°` : answers.bendAngle;
+        }
+
+        function hoseTypeRequired() {
+            return answers.usage === 'hidrolik-yakit';
+        }
+
+        // Seçili hortumun adını, "Yüksek Sıcaklık" işaretliyse (135°C) etiketiyle döndürür.
+        function hoseCaptionText(hose) {
+            if (!hose) return '';
+            return (answers.highTemp && hose.hasHighTemp) ? `${hose.label} (135°C)` : hose.label;
+        }
+
+        // Yüksek sıcaklık checkbox'ını seçili hortuma göre aktif/pasif eder;
+        // hortumun 135°C varyantı yoksa checkbox işaretlenemez, pasif kalır.
+        function updateHighTempOption() {
+            const hose = hydraulicHoseTypes.find(h => h.id === answers.hoseType);
+            if (!hoseTypeRequired() || !hose) {
+                highTempField.classList.add('hidden');
+                highTempCheckbox.checked = false;
+                highTempCheckbox.disabled = true;
+                answers.highTemp = false;
+                return;
+            }
+            highTempField.classList.remove('hidden');
+            if (hose.hasHighTemp) {
+                highTempCheckbox.disabled = false;
+                highTempLabel.classList.remove('is-disabled');
+            } else {
+                highTempCheckbox.disabled = true;
+                highTempCheckbox.checked = false;
+                highTempLabel.classList.add('is-disabled');
+                answers.highTemp = false;
+            }
+        }
+
+        // Sağ panelde seçilen hortumun çizimini ve adını gösterir; seçim
+        // değişince önce yumuşakça kaybolur, sonra yeni görselle belirir.
+        function updateHosePreview() {
+            updateHighTempOption();
+            hosePreviewArt.classList.remove('visible');
+            hosePreviewCaption.classList.remove('visible');
+            hosePreviewSub.classList.remove('visible');
+
+            const hose = hydraulicHoseTypes.find(h => h.id === answers.hoseType);
+            if (!hose) {
+                setTimeout(() => {
+                    hosePreviewArt.innerHTML = '';
+                    hosePreviewCaption.textContent = '';
+                    hosePreviewSub.textContent = '';
+                }, 200);
+                return;
+            }
+            setTimeout(() => {
+                hosePreviewArt.innerHTML = hoseVisuals[hose.visual] || '';
+                hosePreviewCaption.textContent = hoseCaptionText(hose);
+                const entry = hose.diameters.find(d => d.size === answers.diameter);
+                hosePreviewSub.textContent = entry ? `${answers.diameter} · maks. ${entry.cb} bar` : '';
+                requestAnimationFrame(() => {
+                    hosePreviewArt.classList.add('visible');
+                    hosePreviewCaption.classList.add('visible');
+                    hosePreviewSub.classList.add('visible');
+                });
+            }, 200);
+        }
+
+        // Adım 2'de önce çap, sonra çalışma basıncı girilir; hortum tipi listesi
+        // ikisine birden göre filtrelenir (o çapta, istenen basıncı karşılayan tipler).
+        function populateHoseTypeOptions() {
+            step2Layout.classList.toggle('has-hose-panel', hoseTypeRequired());
+
+            if (!hoseTypeRequired()) {
+                hoseTypeField.classList.add('hidden');
+                hoseTypeSelect.removeAttribute('required');
+                if (answers.hoseType) { answers.hoseType = ''; updateHosePreview(); }
+                else updateHighTempOption();
+                return;
+            }
+            hoseTypeField.classList.remove('hidden');
+            hoseTypeSelect.setAttribute('required', 'required');
+
+            if (!answers.diameter) {
+                hoseTypeSelect.innerHTML = '<option value="" disabled selected>Önce çapı seçin</option>';
+                if (answers.hoseType) { answers.hoseType = ''; updateHosePreview(); }
+                return;
+            }
+
+            const requiredPressure = answers.pressure !== '' ? Number(answers.pressure) : null;
+            const matches = hydraulicHoseTypes
+                .map(h => ({ hose: h, entry: h.diameters.find(d => d.size === answers.diameter) }))
+                .filter(({ entry }) => entry && (requiredPressure === null || entry.cb >= requiredPressure));
+
+            if (matches.length === 0) {
+                hoseTypeSelect.innerHTML = requiredPressure === null
+                    ? '<option value="" disabled selected>Bu çap için uygun hortum tipi yok</option>'
+                    : '<option value="" disabled selected>Bu çap ve basınca uygun hortum tipi yok</option>';
+                if (answers.hoseType) { answers.hoseType = ''; updateHosePreview(); }
+                return;
+            }
+
+            const keepSelected = matches.some(({ hose }) => hose.id === answers.hoseType);
+            const options = ['<option value="" disabled' + (keepSelected ? '' : ' selected') + '>Seçiniz</option>']
+                .concat(matches.map(({ hose }) => `<option value="${hose.id}"${hose.id === answers.hoseType ? ' selected' : ''}>${hose.label}</option>`));
+            hoseTypeSelect.innerHTML = options.join('');
+            if (!keepSelected && answers.hoseType) {
+                answers.hoseType = '';
+                updateHosePreview();
+            } else if (keepSelected) {
+                updateHosePreview();
+            }
         }
 
         function updateNextState() {
@@ -518,9 +936,15 @@
             let valid = false;
             if (stepKey === '1') valid = !!answers.usage;
             if (stepKey === '2') {
-                valid = answers.pressure !== '' && !!answers.diameter && answers.length !== '' && !!answers.head1 && !!answers.head2;
+                valid = answers.pressure !== '' && !!answers.diameter && answers.length !== '';
+                if (valid && hoseTypeRequired()) {
+                    valid = !!answers.hoseType;
+                }
+            }
+            if (stepKey === '3') {
+                valid = !!answers.head1 && !!answers.head1Angle && !!answers.head2 && !!answers.head2Angle;
                 if (valid && bendAngleRequired()) {
-                    valid = !!answers.bendAngle;
+                    valid = bendAngleValid();
                 }
             }
             nextBtn.disabled = !valid;
@@ -532,24 +956,37 @@
                 document.querySelectorAll('.option-grid-3 .option-card-lg').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
                 answers.usage = card.dataset.value;
+                populateHoseTypeOptions();
                 updateNextState();
                 setTimeout(() => {
                     if (currentIndex < steps.length - 1) {
                         currentIndex++;
                         showStep(currentIndex);
                     }
-                }, 350);
+                }, 200);
             });
         });
 
         // Adım 2: teknik özellikler
         document.getElementById('pressure').addEventListener('input', e => {
             answers.pressure = e.target.value;
+            populateHoseTypeOptions();
             updateNextState();
         });
         document.getElementById('diameter').addEventListener('change', e => {
             answers.diameter = e.target.value;
+            populateHoseTypeOptions();
             updateNextState();
+        });
+        hoseTypeSelect.addEventListener('change', e => {
+            answers.hoseType = e.target.value;
+            updateHosePreview();
+            updateNextState();
+        });
+        highTempCheckbox.addEventListener('change', e => {
+            answers.highTemp = e.target.checked;
+            const hose = hydraulicHoseTypes.find(h => h.id === answers.hoseType);
+            hosePreviewCaption.textContent = hoseCaptionText(hose);
         });
         document.getElementById('length').addEventListener('input', e => {
             answers.length = e.target.value;
@@ -565,19 +1002,41 @@
                 bendAngleSelect.removeAttribute('required');
                 bendAngleSelect.value = '';
                 answers.bendAngle = '';
+                bendAngleCustomField.classList.add('hidden');
+                bendAngleCustomInput.value = '';
+                answers.bendAngleCustom = '';
             }
             updateNextState();
         }
         document.getElementById('head1').addEventListener('change', e => {
             answers.head1 = e.target.value;
-            handleHeadChange();
+            updateNextState();
         });
         document.getElementById('head2').addEventListener('change', e => {
             answers.head2 = e.target.value;
+            updateNextState();
+        });
+        head1AngleSelect.addEventListener('change', e => {
+            answers.head1Angle = e.target.value;
+            handleHeadChange();
+        });
+        head2AngleSelect.addEventListener('change', e => {
+            answers.head2Angle = e.target.value;
             handleHeadChange();
         });
         bendAngleSelect.addEventListener('change', e => {
             answers.bendAngle = e.target.value;
+            if (answers.bendAngle === 'custom') {
+                bendAngleCustomField.classList.remove('hidden');
+            } else {
+                bendAngleCustomField.classList.add('hidden');
+                bendAngleCustomInput.value = '';
+                answers.bendAngleCustom = '';
+            }
+            updateNextState();
+        });
+        bendAngleCustomInput.addEventListener('input', e => {
+            answers.bendAngleCustom = e.target.value;
             updateNextState();
         });
 
@@ -599,10 +1058,15 @@
             answers.usage = null;
             answers.pressure = '';
             answers.diameter = '';
+            answers.hoseType = '';
+            answers.highTemp = false;
             answers.length = '';
             answers.head1 = '';
+            answers.head1Angle = '';
             answers.head2 = '';
+            answers.head2Angle = '';
             answers.bendAngle = '';
+            answers.bendAngleCustom = '';
 
             document.querySelectorAll('.option-card-lg').forEach(c => c.classList.remove('selected'));
             document.getElementById('pressure').value = '';
@@ -610,8 +1074,24 @@
             document.getElementById('length').value = '';
             document.getElementById('head1').value = '';
             document.getElementById('head2').value = '';
+            head1AngleSelect.value = '';
+            head2AngleSelect.value = '';
             bendAngleSelect.value = '';
             bendAngleField.classList.add('hidden');
+            bendAngleCustomField.classList.add('hidden');
+            bendAngleCustomInput.value = '';
+            hoseTypeField.classList.add('hidden');
+            hoseTypeSelect.innerHTML = '<option value="" disabled selected>Önce çapı seçin</option>';
+            highTempField.classList.add('hidden');
+            highTempCheckbox.checked = false;
+            highTempCheckbox.disabled = true;
+            step2Layout.classList.remove('has-hose-panel');
+            hosePreviewArt.classList.remove('visible');
+            hosePreviewCaption.classList.remove('visible');
+            hosePreviewSub.classList.remove('visible');
+            hosePreviewArt.innerHTML = '';
+            hosePreviewCaption.textContent = '';
+            hosePreviewSub.textContent = '';
 
             showStep(currentIndex);
         });
@@ -620,22 +1100,34 @@
             const h1 = headTypeInfo[answers.head1];
             const h2 = headTypeInfo[answers.head2];
 
+            const selectedHoseType = hydraulicHoseTypes.find(h => h.id === answers.hoseType);
+
             const rows = [
                 ['Kullanım Alanı', usageLabels[answers.usage] || '-'],
                 ['Çalışma Basıncı', `${answers.pressure} bar`],
-                ['Hortum Çapı', answers.diameter || '-'],
-                ['Metraj', `${answers.length} cm`],
-                ['1. Başlık Tipi', h1 ? h1.label : '-'],
-                ['1. Soket (Otomatik Eşleşme)', h1 ? h1.socket : '-'],
-                ['2. Başlık Tipi', h2 ? h2.label : '-'],
-                ['2. Soket (Otomatik Eşleşme)', h2 ? h2.socket : '-']
+                ['Hortum Çapı', answers.diameter || '-']
             ];
-            if (bendAngleRequired() && answers.bendAngle) {
-                rows.push(['Basma Açısı', answers.bendAngle]);
+            if (hoseTypeRequired() && selectedHoseType) {
+                rows.push(['Hortum Tipi', hoseCaptionText(selectedHoseType)]);
+            }
+            const head1Text = h1 ? `${h1.label} · ${answers.head1Angle}°` : '-';
+            const head2Text = h2 ? `${h2.label} · ${answers.head2Angle}°` : '-';
+            rows.push(
+                ['Metraj', `${answers.length} cm`],
+                ['1. Başlık', head1Text],
+                ['2. Başlık', head2Text]
+            );
+            if (bendAngleRequired() && bendAngleValid()) {
+                rows.push(['Basma Açısı', bendAngleDisplayText()]);
             }
 
             const summary = document.getElementById('resultSummary');
-            summary.innerHTML = rows.map(([label, value]) => `<dt>${label}</dt><dd>${value}</dd>`).join('');
+            summary.innerHTML = rows.map(([label, value]) => {
+                if (label === 'Hortum Tipi') {
+                    return `<dt>${label}</dt><dd class="hose-type-name">${value}</dd>`;
+                }
+                return `<dt>${label}</dt><dd>${value}</dd>`;
+            }).join('');
 
             const messageLines = [
                 'Merhaba, Fibar Hidrolik hortum sihirbazından ulaşıyorum.',
