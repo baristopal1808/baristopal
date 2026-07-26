@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ürün Ağacı | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-card">
+                    <div class="p-tabs" id="levelTabs"></div>
+                    <div id="levelContent"></div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderPortalChrome('urun-agaci', 'Ürün Ağacı', 'Malzeme/Hizmet → Yarı Mamül → Son Ürün/Set hiyerarşisi.');
+
+        const LEVELS = [
+            { key: 'malzeme', label: 'Malzeme / Hizmet' },
+            { key: 'yarimamul', label: 'Yarı Mamül' },
+            { key: 'sonurun', label: 'Son Ürün / Set' }
+        ];
+        let activeLevel = 'malzeme';
+
+        // Yarı Mamül / Son Ürün oluştururken geçici bileşen listesi
+        let pendingComponents = [];
+
+        function formatTL(v) {
+            return (Number(v) || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+        }
+
+        function renderTabs() {
+            document.getElementById('levelTabs').innerHTML = LEVELS.map(l => `
+                <button type="button" class="p-tab-btn ${l.key === activeLevel ? 'active' : ''}" data-level="${l.key}">${l.label}</button>
+            `).join('');
+            document.querySelectorAll('[data-level]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeLevel = btn.dataset.level;
+                    pendingComponents = [];
+                    renderTabs();
+                    renderContent();
+                });
+            });
+        }
+
+        function allStokItems() {
+            const data = getStok();
+            const rows = [];
+            Object.keys(data).forEach(cat => (data[cat] || []).forEach(it => rows.push({ ...it, category: cat })));
+            return rows;
+        }
+
+        /* ---------- Seviye 1: Malzeme / Hizmet (salt görüntüleme) ---------- */
+        function renderMalzemeLevel() {
+            const items = allStokItems();
+            document.getElementById('levelContent').innerHTML = `
+                <p class="p-inline-note" style="margin-bottom:18px;">
+                    Bunlar Envanter Girişi'nde tanımladığın ham malzeme/hizmet kalemleridir
+                    (Nipel, Rakor, Soket, Hortum). Yarı mamüller bu kalemlerden oluşturulur.
+                </p>
+                <div class="p-table-wrap">
+                    <table class="p-table">
+                        <thead><tr><th>Kod</th><th>Açıklama</th><th>Grup</th><th>Birim</th><th>Birim Fiyat</th></tr></thead>
+                        <tbody>
+                            ${items.length === 0
+                                ? '<tr><td colspan="5" class="p-table-empty">Henüz envanter kartı yok. Önce Envanter Girişi\'nden malzeme ekleyin.</td></tr>'
+                                : items.map(it => `
+                                    <tr>
+                                        <td><strong>${escapeHtml(it.code)}</strong></td>
+                                        <td>${escapeHtml(it.name)}</td>
+                                        <td>${escapeHtml(STOK_CATEGORY_LABELS[it.category] || it.category)}</td>
+                                        <td>${escapeHtml(it.unit || '-')}</td>
+                                        <td>${formatTL(it.unitCost)}</td>
+                                    </tr>
+                                `).join('')
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        /* ---------- Seviye 2: Yarı Mamül ---------- */
+        function renderYariMamulLevel() {
+            const items = allStokItems();
+            const list = getYariMamuller();
+
+            document.getElementById('levelContent').innerHTML = `
+                <p class="p-inline-note" style="margin-bottom:18px;">
+                    Müşteri talebine göre montajını yaptığın kombinasyonları (ör. hortum + iki soket)
+                    burada bir yarı mamül olarak tanımla; maliyeti bileşenlerden otomatik hesaplanır.
+                </p>
+                <div class="p-row" style="align-items:flex-end;">
+                    <div class="p-field">
+                        <label for="ymAd">Yarı Mamül Adı</label>
+                        <input type="text" id="ymAd" placeholder="Örn: 1/2&quot; Hortum Hattı Komple">
+                    </div>
+                </div>
+                <div class="p-row" style="align-items:flex-end;">
+                    <div class="p-field">
+                        <label for="ymMalzeme">Malzeme Ekle</label>
+                        <select id="ymMalzeme">
+                            <option value="" disabled selected>Seçiniz</option>
+                            ${items.map(it => `<option value="${escapeHtml(it.code)}">${escapeHtml(it.code)} — ${escapeHtml(it.name)}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="p-field">
+                        <label for="ymMiktar">Miktar</label>
+                        <input type="number" id="ymMiktar" min="0.01" step="0.01" value="1">
+                    </div>
+                    <button type="button" class="p-btn p-btn-ghost p-btn-sm" id="ymEkleBtn" style="margin-bottom:18px;">+ Ekle</button>
+                </div>
+                <div id="ymPendingList" style="margin-bottom:18px;"></div>
+                <button type="button" class="p-btn p-btn-primary" id="ymKaydetBtn" style="margin-bottom:26px;">Yarı Mamülü Kaydet</button>
+
+                <h2>Tanımlı Yarı Mamüller</h2>
+                <div class="p-table-wrap">
+                    <table class="p-table">
+                        <thead><tr><th>Kod</th><th>Ad</th><th>Bileşenler</th><th>Hesaplanan Maliyet</th><th></th></tr></thead>
+                        <tbody>
+                            ${list.length === 0
+                                ? '<tr><td colspan="5" class="p-table-empty">Henüz yarı mamül tanımlanmadı.</td></tr>'
+                                : list.map(ym => `
+                                    <tr>
+                                        <td><strong>${escapeHtml(ym.code)}</strong></td>
+                                        <td>${escapeHtml(ym.name)}</td>
+                                        <td style="font-size:12.5px; color:var(--text-muted);">
+                                            ${(ym.components || []).map(c => `${escapeHtml(c.stokCode)} × ${c.qty}`).join(', ')}
+                                        </td>
+                                        <td>${formatTL(yariMamulCost(ym))}</td>
+                                        <td><button type="button" class="p-btn p-btn-danger p-btn-sm" data-delete-ym="${ym.id}">Sil</button></td>
+                                    </tr>
+                                `).join('')
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            renderPendingList('ymPendingList', c => {
+                const item = items.find(it => it.code === c.stokCode);
+                return item ? `${item.code} — ${item.name}` : c.stokCode;
+            });
+
+            document.getElementById('ymEkleBtn').addEventListener('click', () => {
+                const code = document.getElementById('ymMalzeme').value;
+                const qty = Number(document.getElementById('ymMiktar').value) || 0;
+                if (!code || qty <= 0) return;
+                pendingComponents.push({ stokCode: code, qty });
+                renderYariMamulLevel();
+            });
+
+            document.getElementById('ymKaydetBtn').addEventListener('click', () => {
+                const name = document.getElementById('ymAd').value.trim();
+                if (!name || pendingComponents.length === 0) {
+                    alert('Yarı mamül adı ve en az bir bileşen girilmelidir.');
+                    return;
+                }
+                addYariMamul({ name, components: pendingComponents });
+                pendingComponents = [];
+                renderYariMamulLevel();
+            });
+
+            document.querySelectorAll('[data-delete-ym]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    deleteYariMamul(Number(btn.dataset.deleteYm));
+                    renderYariMamulLevel();
+                });
+            });
+        }
+
+        /* ---------- Seviye 3: Son Ürün / Set ---------- */
+        function renderSonUrunLevel() {
+            const yariMamuller = getYariMamuller();
+            const list = getSonUrunler();
+
+            document.getElementById('levelContent').innerHTML = `
+                <p class="p-inline-note" style="margin-bottom:18px;">
+                    Birkaç yarı mamülü bir araya getiren set/son ürünleri burada tanımla;
+                    maliyeti seçilen yarı mamüllerin toplamından otomatik hesaplanır.
+                </p>
+                ${yariMamuller.length === 0 ? '<p class="p-inline-note">Önce Yarı Mamül sekmesinden en az bir yarı mamül oluşturmalısın.</p>' : `
+                <div class="p-row" style="align-items:flex-end;">
+                    <div class="p-field">
+                        <label for="suAd">Son Ürün / Set Adı</label>
+                        <input type="text" id="suAd" placeholder="Örn: Ekskavatör Hidrolik Hattı Seti">
+                    </div>
+                </div>
+                <div class="p-row" style="align-items:flex-end;">
+                    <div class="p-field">
+                        <label for="suYariMamul">Yarı Mamül Ekle</label>
+                        <select id="suYariMamul">
+                            <option value="" disabled selected>Seçiniz</option>
+                            ${yariMamuller.map(ym => `<option value="${ym.id}">${escapeHtml(ym.code)} — ${escapeHtml(ym.name)}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="p-field">
+                        <label for="suMiktar">Miktar</label>
+                        <input type="number" id="suMiktar" min="1" step="1" value="1">
+                    </div>
+                    <button type="button" class="p-btn p-btn-ghost p-btn-sm" id="suEkleBtn" style="margin-bottom:18px;">+ Ekle</button>
+                </div>
+                <div id="suPendingList" style="margin-bottom:18px;"></div>
+                <button type="button" class="p-btn p-btn-primary" id="suKaydetBtn" style="margin-bottom:26px;">Son Ürünü Kaydet</button>
+                `}
+
+                <h2>Tanımlı Son Ürünler / Setler</h2>
+                <div class="p-table-wrap">
+                    <table class="p-table">
+                        <thead><tr><th>Kod</th><th>Ad</th><th>Bileşenler</th><th>Hesaplanan Maliyet</th><th></th></tr></thead>
+                        <tbody>
+                            ${list.length === 0
+                                ? '<tr><td colspan="5" class="p-table-empty">Henüz son ürün/set tanımlanmadı.</td></tr>'
+                                : list.map(su => `
+                                    <tr>
+                                        <td><strong>${escapeHtml(su.code)}</strong></td>
+                                        <td>${escapeHtml(su.name)}</td>
+                                        <td style="font-size:12.5px; color:var(--text-muted);">
+                                            ${(su.components || []).map(c => {
+                                                const ym = yariMamuller.find(y => y.id === c.yariMamulId);
+                                                return `${ym ? ym.code : '?'} × ${c.qty}`;
+                                            }).join(', ')}
+                                        </td>
+                                        <td>${formatTL(sonUrunCost(su))}</td>
+                                        <td><button type="button" class="p-btn p-btn-danger p-btn-sm" data-delete-su="${su.id}">Sil</button></td>
+                                    </tr>
+                                `).join('')
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            if (yariMamuller.length > 0) {
+                renderPendingList('suPendingList', c => {
+                    const ym = yariMamuller.find(y => y.id === c.yariMamulId);
+                    return ym ? `${ym.code} — ${ym.name}` : String(c.yariMamulId);
+                });
+
+                document.getElementById('suEkleBtn').addEventListener('click', () => {
+                    const id = Number(document.getElementById('suYariMamul').value);
+                    const qty = Number(document.getElementById('suMiktar').value) || 0;
+                    if (!id || qty <= 0) return;
+                    pendingComponents.push({ yariMamulId: id, qty });
+                    renderSonUrunLevel();
+                });
+
+                document.getElementById('suKaydetBtn').addEventListener('click', () => {
+                    const name = document.getElementById('suAd').value.trim();
+                    if (!name || pendingComponents.length === 0) {
+                        alert('Son ürün adı ve en az bir yarı mamül bileşeni girilmelidir.');
+                        return;
+                    }
+                    addSonUrun({ name, components: pendingComponents });
+                    pendingComponents = [];
+                    renderSonUrunLevel();
+                });
+            }
+
+            document.querySelectorAll('[data-delete-su]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    deleteSonUrun(Number(btn.dataset.deleteSu));
+                    renderSonUrunLevel();
+                });
+            });
+        }
+
+        function renderPendingList(containerId, labelFn) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            if (pendingComponents.length === 0) {
+                container.innerHTML = '<p class="p-inline-note">Henüz bileşen eklenmedi.</p>';
+                return;
+            }
+            container.innerHTML = pendingComponents.map((c, idx) => `
+                <span class="p-badge p-badge-yeni" style="margin:0 6px 6px 0; display:inline-flex; align-items:center; gap:8px;">
+                    ${escapeHtml(labelFn(c))} × ${c.qty}
+                    <button type="button" data-remove-pending="${idx}" style="background:none;border:none;color:inherit;cursor:pointer;font-weight:700;">×</button>
+                </span>
+            `).join('');
+            container.querySelectorAll('[data-remove-pending]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    pendingComponents.splice(Number(btn.dataset.removePending), 1);
+                    renderContent();
+                });
+            });
+        }
+
+        function renderContent() {
+            if (activeLevel === 'malzeme') renderMalzemeLevel();
+            else if (activeLevel === 'yarimamul') renderYariMamulLevel();
+            else renderSonUrunLevel();
+        }
+
+        renderTabs();
+        renderContent();
+    </script>
+</body>
+</html>

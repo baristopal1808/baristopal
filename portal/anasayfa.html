@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anasayfa | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-main">
+        <header class="portal-topbar" id="portalTopbar"></header>
+        <main class="portal-content" style="max-width:1100px; width:100%; margin:0 auto;">
+            <div class="anasayfa-logo-hero">
+                <img src="../logo.jpg" alt="Fibar Hidrolik Logo">
+                <span>Fibar Hidrolik Personel Portalı</span>
+            </div>
+            <h2 style="margin-bottom:18px;">Hızlı Erişim</h2>
+            <div class="portal-grid" id="quickGrid"></div>
+        </main>
+    </div>
+
+    <a href="ayarlar.html" class="portal-settings-fab" id="settingsFab" aria-label="Ayarlar" title="Ayarlar" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+    </a>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderMinimalTopbar('Anasayfa', 'Fibar Hidrolik personel portalına hoş geldiniz.');
+        if (isAdmin()) {
+            document.getElementById('settingsFab').style.display = 'flex';
+        }
+
+        const cards = [
+            {
+                qc: 'qc-blue', href: 'firma-sec.html', title: 'Müşteriler',
+                desc: 'Müşteri firmalarınızı görüntüleyin ve yenilerini ekleyin.',
+                icon: '<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1"/>'
+            },
+            {
+                qc: 'qc-teal', href: 'projeler.html', title: 'Projeler',
+                desc: 'Sevk edilenler, devam edenler ve henüz başlanmamış projeleri tek ekranda görün.',
+                icon: '<path d="M9 3h6l1 4H8l1-4Z"/><path d="M6 7h12l-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7Z"/><path d="M10 11v6M14 11v6"/>'
+            },
+            {
+                qc: 'qc-violet', href: 'siparis.html', title: 'Sipariş Oluştur',
+                desc: 'Yeni bir müşteri siparişi kaydedin ve mevcut siparişleri takip edin.',
+                icon: '<path d="M6 3h9l3 3v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M9 11h6M9 15h6M9 7h3"/>'
+            },
+            {
+                qc: 'qc-amber', href: 'maliyet.html', title: 'Maliyet Hesabı',
+                desc: 'Ürün, adet ve işçilik bilgilerine göre hızlıca teklif maliyeti hesaplayın.',
+                icon: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M8 12h1M11.5 12h1M15 12h1M8 16h1M11.5 16h1M15 16h1"/>'
+            },
+            {
+                qc: 'qc-green', href: 'montaj.html', title: 'Montaj Süreci',
+                desc: 'Saha montaj kayıtlarını oluşturun ve süreç durumlarını güncelleyin.',
+                icon: '<path d="M14.7 6.3a3 3 0 0 0-4.2 4.2L4 17v3h3l6.5-6.5a3 3 0 0 0 4.2-4.2l-2.4 2.4-2-2 2.4-2.4Z"/>'
+            },
+            {
+                qc: 'qc-cyan', href: 'stok.html', title: 'Stok',
+                desc: 'Stok durumu, stok hareketleri ve envanter kartı oluşturma bir arada.',
+                icon: '<path d="M4 8.5 12 4l8 4.5-8 4.5-8-4.5Z"/><path d="M4 8.5v7L12 20l8-4.5v-7"/><path d="M12 13v7"/><path d="M8 6.3 16 10.8" opacity="0.55"/>'
+            },
+            {
+                qc: 'qc-pink', href: 'rapor.html', title: 'Dönemsel Rapor',
+                desc: 'Aylık veya çeyreklik bazda sipariş, montaj ve maliyet özetlerini görün.',
+                icon: '<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>'
+            },
+            {
+                qc: 'qc-indigo', href: 'urun-agaci.html', title: 'Ürün Ağacı',
+                desc: 'Malzeme/hizmet, yarı mamül ve son ürün/set hiyerarşisini yönetin.',
+                icon: '<circle cx="12" cy="4" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="12" cy="20" r="2"/><path d="M12 6v4M8 12l-1.2-6M16 12l1.2-6M8 13.5 11 18M16 13.5 13 18"/>'
+            }
+        ];
+
+        document.getElementById('quickGrid').innerHTML = cards
+            .filter(c => !c.adminOnly || isAdmin())
+            .map(c => `
+                <a class="portal-quick-card ${c.qc}" href="${c.href}">
+                    <div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg></div>
+                    <h3>${c.title}</h3>
+                    <p>${c.desc}</p>
+                </a>
+            `).join('');
+    </script>
+</body>
+</html>

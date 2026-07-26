@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personel Girişi | Fibar Hidrolik</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --text-main: #2A2A2A;
+            --accent-blue: #2B6CB0;
+            --bg-color: #C8CBB4;
+            --font-heading: 'Montserrat', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-body);
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        h1 { font-family: var(--font-heading); }
+        .login-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 42px 36px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+        }
+        .login-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 22px;
+        }
+        .login-logo img { max-height: 46px; }
+        .login-card h1 {
+            font-size: 21px;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .login-card p.sub {
+            text-align: center;
+            font-size: 13.5px;
+            color: #666;
+            margin-bottom: 28px;
+        }
+        .field { margin-bottom: 18px; }
+        .field label {
+            display: block;
+            font-weight: 600;
+            font-size: 13.5px;
+            margin-bottom: 7px;
+        }
+        .field input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d8d8d8;
+            border-radius: 6px;
+            font-family: var(--font-body);
+            font-size: 15px;
+            background-color: #fafafa;
+        }
+        .field input:focus {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 1px;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--accent-blue);
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .login-btn:hover { background-color: #21548a; }
+        .login-error {
+            display: none;
+            background-color: rgba(192,57,43,0.1);
+            color: #c0392b;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            margin-bottom: 18px;
+        }
+        .login-error.visible { display: block; }
+        .login-note {
+            margin-top: 22px;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .back-home {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #666;
+            text-decoration: none;
+        }
+        .back-home:hover { color: var(--accent-blue); }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="logo.jpg" alt="Fibar Hidrolik Logo">
+        </div>
+        <h1>Personel Portalı</h1>
+        <p class="sub">Devam etmek için giriş yapın</p>
+
+        <div class="login-error" id="loginError">Kullanıcı adı veya şifre hatalı.</div>
+
+        <form id="loginForm">
+            <div class="field">
+                <label for="username">Kullanıcı Adı</label>
+                <input type="text" id="username" autocomplete="username" required>
+            </div>
+            <div class="field">
+                <label for="password">Şifre</label>
+                <input type="password" id="password" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="login-btn">Giriş Yap</button>
+        </form>
+
+        <p class="login-note">
+            Bu portal bir prototiptir; giriş bilgileri ve tüm veriler yalnızca bu
+            tarayıcıda saklanır, cihazlar arası paylaşılmaz.
+        </p>
+        <a href="index.html" class="back-home">&larr; Anasayfaya Dön</a>
+    </div>
+
+    <script src="portal/portal.js"></script>
+    <script>
+        // Zaten giriş yapılmışsa doğrudan anasayfaya yönlendir.
+        if (isLoggedIn()) {
+            window.location.replace('portal/anasayfa.html');
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorBox = document.getElementById('loginError');
+
+            if (checkCredentials(username, password)) {
+                localStorage.setItem(PORTAL_KEYS.auth, 'true');
+                localStorage.setItem(PORTAL_KEYS.user, username);
+                window.location.href = 'portal/anasayfa.html';
+            } else {
+                errorBox.classList.add('visible');
+            }
+        });
+    </script>
+</body>
+</html>

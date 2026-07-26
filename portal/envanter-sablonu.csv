@@ -1,0 +1,18 @@
+﻿Malzeme Kodu,Malzeme Açıklaması,Malzeme Grubu,Takip Birimi,Kritik Stok Seviyesi,Birim fiyatı (metre fiyatı)
+FBR00001,"Hidrolik Hortum - 1/4"" - 22.5MPa - SAE 100 - R1 AT/DIN-EN 853 1SN",Hortum,Metre,50,300
+FBR00002,"Hidrolik Hortum - 3/8"" - 18MPa - SAE 100 - R1 AT/DIN-EN 853 1SN",Hortum,Metre,50,350
+FBR00003,"Hidrolik Hortum - 1/2"" - 16MPa - SAE 100 - R1 AT/DIN-EN 853 1SN",Hortum,Metre,50,400
+FBR00004,"Hidrolik Hortum - 3/4"" - 10.5MPa - SAE 100 - R1 AT/DIN-EN 853 1SN",Hortum,Metre,50,450
+FBR00005,"Hidrolik Hortum - 1/4"" - 22.5MPa - SAE 100 - R1 AT/DIN-EN 853 1SN",Hortum,Metre,50,600
+FBR00006,"Hidrolik Hortum - 1"" - 8.8MPa - SAE 100 - R1 AT/DIN-EN 853 1SN",Hortum,Metre,50,650
+FBR00007,"Hidrolik Hortum - 1""1/4 - 6.3MPa - SAE 100 - R1 AT/DIN-EN 853 1SN",Hortum,Metre,50,700
+FBR00008,"Hidrolik Hortum - 1""1/2 - 5MPa - SAE 100 - R1 AT/DIN-EN 853 1SN",Hortum,Metre,50,800
+FBR00009,"Hidrolik Hortum - 2"" - 4MPa - SAE 100 - R1 AT/DIN-EN 853 1SN",Hortum,Metre,50,1000
+FBR00010,"Hidrolik Hortum - 1/4"" - 40MPa - SAE 100 - R2 AT/DIN-EN 853 2SN",Hortum,Metre,50,450
+FBR00011,"Hidrolik Hortum - 3/8"" - 33MPa - SAE 100 - R2 AT/DIN-EN 853 2SN",Hortum,Metre,50,500
+FBR00012,"Hidrolik Hortum - 1/2"" - 27.5MPa - SAE 100 - R2 AT/DIN-EN 853 2SN",Hortum,Metre,50,550
+FBR00013,"Hidrolik Hortum - 3/4"" - 21.5MPa - SAE 100 - R2 AT/DIN-EN 853 2SN",Hortum,Metre,50,660
+FBR00014,"Hidrolik Hortum - 1"" -  16.5MPa - SAE 100 - R2 AT/DIN-EN 853 2SN",Hortum,Metre,50,770
+FBR00015,"Hidrolik Hortum - 1""1/4 -  12.5MPa - SAE 100 - R2 AT/DIN-EN 853 2SN",Hortum,Metre,50,890
+FBR00016,"Hidrolik Hortum - 1""1/2 -  9MPa - SAE 100 - R2 AT/DIN-EN 853 2SN",Hortum,Metre,50,1200
+FBR00017,"Hidrolik Hortum - 2"" -  7.8MPa - SAE 100 - R2 AT/DIN-EN 853 2SN",Hortum,Metre,50,1600

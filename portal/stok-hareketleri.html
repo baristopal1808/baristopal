@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stok Hareketleri | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-card">
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+                        <h2 style="margin-bottom:0;">Hareket Geçmişi</h2>
+                        <select id="filterGrup" style="max-width:200px;">
+                            <option value="">Tüm Kategoriler</option>
+                            <option value="nipel">Nipel</option>
+                            <option value="rakor">Rakor</option>
+                            <option value="soket">Soket</option>
+                            <option value="hortum">Hortum</option>
+                        </select>
+                    </div>
+                    <p class="p-inline-note" style="margin-bottom:18px;">
+                        Stok Durumu ekranında bir malzemenin adedi her değiştirildiğinde
+                        buraya otomatik olarak bir kayıt düşer.
+                    </p>
+                    <div class="p-table-wrap">
+                        <table class="p-table">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th><th>Kod</th><th>Malzeme</th><th>Grup</th>
+                                    <th>Eski Miktar</th><th>Yeni Miktar</th><th>Değişim</th><th>Kullanıcı</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hareketBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderPortalChrome('stok-hareketleri', 'Stok Hareketleri', 'Tüm stok giriş/çıkış hareketlerinin otomatik kaydedilen geçmişi.');
+
+        function formatDate(iso) {
+            if (!iso) return '-';
+            const d = new Date(iso);
+            return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function renderHareketler() {
+            const grupFilter = document.getElementById('filterGrup').value;
+            const list = getStokHareketleri().filter(h => !grupFilter || h.category === grupFilter);
+            const body = document.getElementById('hareketBody');
+
+            if (list.length === 0) {
+                body.innerHTML = '<tr><td colspan="8" class="p-table-empty">Henüz bir stok hareketi kaydedilmedi.</td></tr>';
+                return;
+            }
+            body.innerHTML = list.map(h => {
+                const deltaText = h.delta > 0 ? `+${h.delta}` : String(h.delta);
+                const deltaColor = h.delta > 0 ? 'var(--status-tamamlandi)' : 'var(--status-iptal)';
+                return `
+                    <tr>
+                        <td>${formatDate(h.date)}</td>
+                        <td><strong>${escapeHtml(h.code || '-')}</strong></td>
+                        <td>${escapeHtml(h.name || '-')}</td>
+                        <td>${escapeHtml(STOK_CATEGORY_LABELS[h.category] || h.category)}</td>
+                        <td>${escapeHtml(String(h.oldQty))}</td>
+                        <td>${escapeHtml(String(h.newQty))}</td>
+                        <td style="color:${deltaColor}; font-weight:700;">${deltaText}</td>
+                        <td>${escapeHtml(h.user || '-')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('filterGrup').addEventListener('change', renderHareketler);
+        renderHareketler();
+    </script>
+</body>
+</html>

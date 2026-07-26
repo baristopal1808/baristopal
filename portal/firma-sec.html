@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteriler | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-card">
+                    <h2>Yeni Müşteri Ekle</h2>
+                    <p class="p-inline-note" style="margin-bottom:18px;">
+                        Firma adı dışındaki alanlar şimdilik zorunlu değil; istersen boş
+                        bırakıp daha sonra "Düzenle" ile tamamlayabilirsin.
+                    </p>
+                    <form id="addCompanyForm">
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="newCompanyName">Firma Adı *</label>
+                                <input type="text" id="newCompanyName" placeholder="Örn: Örnek Makina A.Ş." required>
+                            </div>
+                            <div class="p-field">
+                                <label for="newCompanyContact">Yetkili Kişi</label>
+                                <input type="text" id="newCompanyContact" placeholder="Örn: Ahmet Yılmaz">
+                            </div>
+                        </div>
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="newCompanyPhone">Telefon</label>
+                                <input type="text" id="newCompanyPhone" placeholder="Örn: 0312 XXX XX XX">
+                            </div>
+                            <div class="p-field">
+                                <label for="newCompanyEmail">E-posta</label>
+                                <input type="email" id="newCompanyEmail" placeholder="Örn: info@ornek.com.tr">
+                            </div>
+                        </div>
+                        <div class="p-field">
+                            <label for="newCompanyAddress">İşyeri Adresi</label>
+                            <input type="text" id="newCompanyAddress" placeholder="Örn: Organize Sanayi Bölgesi, Ankara">
+                        </div>
+                        <div class="p-field">
+                            <label for="newCompanyNotes">Notlar</label>
+                            <textarea id="newCompanyNotes" placeholder="Varsa ek bilgi..."></textarea>
+                        </div>
+                        <button type="submit" class="p-btn p-btn-primary">Müşteriyi Ekle</button>
+                    </form>
+                </div>
+
+                <div class="portal-card">
+                    <h2>Müşteri Listesi</h2>
+                    <p class="p-inline-note" style="margin-bottom:18px;">
+                        Sipariş, maliyet, montaj ve proje ekranlarında firma seçerken
+                        buradaki liste kullanılır.
+                    </p>
+                    <div class="portal-grid" id="companyGrid"></div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderPortalChrome('firma', 'Müşteriler', 'Müşteri firmalarınızı yönetin ve yenilerini ekleyin.');
+
+        let editingCompany = null;
+
+        function companyDetailRow(label, value) {
+            if (!value) return '';
+            return `<div style="font-size:13px; color:var(--text-muted);"><strong style="color:var(--text-main);">${label}:</strong> ${escapeHtml(value)}</div>`;
+        }
+
+        function renderCompanies() {
+            const companies = getCompanies();
+            const grid = document.getElementById('companyGrid');
+            if (companies.length === 0) {
+                grid.innerHTML = '<p class="p-table-empty">Henüz müşteri eklenmedi.</p>';
+                return;
+            }
+            grid.innerHTML = companies.map(c => {
+                if (editingCompany === c.name) {
+                    return `
+                        <div class="p-company-card">
+                            <h3>${escapeHtml(c.name)}</h3>
+                            <span class="company-code">${escapeHtml(c.code)}</span>
+                            <div class="p-field" style="margin-bottom:0;">
+                                <label>Yetkili Kişi</label>
+                                <input type="text" data-edit="contactPerson" value="${escapeHtml(c.contactPerson || '')}">
+                            </div>
+                            <div class="p-field" style="margin-bottom:0;">
+                                <label>Telefon</label>
+                                <input type="text" data-edit="phone" value="${escapeHtml(c.phone || '')}">
+                            </div>
+                            <div class="p-field" style="margin-bottom:0;">
+                                <label>E-posta</label>
+                                <input type="email" data-edit="email" value="${escapeHtml(c.email || '')}">
+                            </div>
+                            <div class="p-field" style="margin-bottom:0;">
+                                <label>İşyeri Adresi</label>
+                                <input type="text" data-edit="address" value="${escapeHtml(c.address || '')}">
+                            </div>
+                            <div class="p-field" style="margin-bottom:0;">
+                                <label>Notlar</label>
+                                <textarea data-edit="notes">${escapeHtml(c.notes || '')}</textarea>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button type="button" class="p-btn p-btn-primary p-btn-sm" data-save-company="${escapeHtml(c.name)}">Kaydet</button>
+                                <button type="button" class="p-btn p-btn-ghost p-btn-sm" data-cancel-edit>Vazgeç</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                const details = [
+                    companyDetailRow('Yetkili', c.contactPerson),
+                    companyDetailRow('Telefon', c.phone),
+                    companyDetailRow('E-posta', c.email),
+                    companyDetailRow('Adres', c.address)
+                ].join('');
+                return `
+                    <div class="p-company-card">
+                        <h3>${escapeHtml(c.name)}</h3>
+                        <span class="company-code">${escapeHtml(c.code)}</span>
+                        ${details || '<div style="font-size:13px; color:var(--text-muted);">İletişim bilgisi girilmedi.</div>'}
+                        <button type="button" class="p-btn p-btn-ghost p-btn-sm" data-edit-company="${escapeHtml(c.name)}">Düzenle</button>
+                    </div>
+                `;
+            }).join('');
+
+            grid.querySelectorAll('[data-edit-company]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    editingCompany = btn.dataset.editCompany;
+                    renderCompanies();
+                });
+            });
+            grid.querySelectorAll('[data-cancel-edit]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    editingCompany = null;
+                    renderCompanies();
+                });
+            });
+            grid.querySelectorAll('[data-save-company]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const card = btn.closest('.p-company-card');
+                    const details = {};
+                    card.querySelectorAll('[data-edit]').forEach(field => {
+                        details[field.dataset.edit] = field.value.trim();
+                    });
+                    updateCompanyDetails(btn.dataset.saveCompany, details);
+                    editingCompany = null;
+                    renderCompanies();
+                });
+            });
+        }
+
+        document.getElementById('addCompanyForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const name = document.getElementById('newCompanyName').value.trim();
+            if (!name) return;
+            addCompany(name, {
+                contactPerson: document.getElementById('newCompanyContact').value.trim(),
+                phone: document.getElementById('newCompanyPhone').value.trim(),
+                email: document.getElementById('newCompanyEmail').value.trim(),
+                address: document.getElementById('newCompanyAddress').value.trim(),
+                notes: document.getElementById('newCompanyNotes').value.trim()
+            });
+            e.target.reset();
+            renderCompanies();
+        });
+
+        renderCompanies();
+    </script>
+</body>
+</html>

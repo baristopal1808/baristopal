@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envanter Listesi | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-card">
+                    <h2>Filtrele</h2>
+                    <div class="p-row">
+                        <div class="p-field" style="margin-bottom:0;">
+                            <label for="filterKod">Malzeme Kodu</label>
+                            <input type="text" id="filterKod" placeholder="Örn: FBR00001">
+                        </div>
+                        <div class="p-field" style="margin-bottom:0;">
+                            <label for="filterAciklama">Malzeme Açıklaması</label>
+                            <input type="text" id="filterAciklama" placeholder="Örn: Rakor, Hortum...">
+                        </div>
+                        <div class="p-field" style="margin-bottom:0;">
+                            <label for="filterGrup">Malzeme Grubu</label>
+                            <select id="filterGrup">
+                                <option value="">Tümü</option>
+                                <option value="nipel">Nipel</option>
+                                <option value="rakor">Rakor</option>
+                                <option value="soket">Soket</option>
+                                <option value="hortum">Hortum</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portal-card">
+                    <h2>Envanter Kartları</h2>
+                    <div class="p-table-wrap">
+                        <table class="p-table">
+                            <thead>
+                                <tr>
+                                    <th>Kod</th><th>Açıklama</th><th>Grup</th><th>Birim</th>
+                                    <th>Stok Miktarı</th><th>Kritik Seviye</th><th>Birim Maliyet</th><th>Durum</th>
+                                    <th>Giriş Tarihi</th><th>Giren</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderPortalChrome('envanter-listesi', 'Envanter Listesi', 'Oluşturulan tüm envanter kartlarını kod veya açıklamaya göre arayın.');
+
+        function allStokItems() {
+            const data = getStok();
+            const rows = [];
+            Object.keys(data).forEach(cat => {
+                (data[cat] || []).forEach(it => rows.push({ ...it, category: cat }));
+            });
+            return rows;
+        }
+
+        function renderList() {
+            const kodFilter = document.getElementById('filterKod').value.trim().toLowerCase();
+            const aciklamaFilter = document.getElementById('filterAciklama').value.trim().toLowerCase();
+            const grupFilter = document.getElementById('filterGrup').value;
+
+            const rows = allStokItems().filter(it => {
+                const matchesKod = !kodFilter || (it.code || '').toLowerCase().includes(kodFilter);
+                const matchesAciklama = !aciklamaFilter || (it.name || '').toLowerCase().includes(aciklamaFilter);
+                const matchesGrup = !grupFilter || it.category === grupFilter;
+                return matchesKod && matchesAciklama && matchesGrup;
+            });
+
+            const body = document.getElementById('listBody');
+            if (rows.length === 0) {
+                body.innerHTML = '<tr><td colspan="10" class="p-table-empty">Kriterlere uyan envanter kartı bulunamadı.</td></tr>';
+                return;
+            }
+            body.innerHTML = rows.map(it => {
+                const durum = stokDurum(it.qty, it.critical);
+                const maliyetText = it.unitCost ? it.unitCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺' : '-';
+                return `
+                    <tr>
+                        <td><strong>${escapeHtml(it.code || '-')}</strong></td>
+                        <td>${escapeHtml(it.name || '-')}</td>
+                        <td>${escapeHtml(STOK_CATEGORY_LABELS[it.category] || it.category)}</td>
+                        <td>${escapeHtml(it.unit || '-')}</td>
+                        <td>${escapeHtml(String(it.qty ?? 0))}</td>
+                        <td>${escapeHtml(String(it.critical ?? 0))}</td>
+                        <td>${escapeHtml(maliyetText)}</td>
+                        <td><span class="p-badge p-badge-${durum.key}">${durum.label}</span></td>
+                        <td>${it.entryDate ? escapeHtml(it.entryDate) : '-'}</td>
+                        <td>${it.createdBy ? escapeHtml(it.createdBy) : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('filterKod').addEventListener('input', renderList);
+        document.getElementById('filterAciklama').addEventListener('input', renderList);
+        document.getElementById('filterGrup').addEventListener('change', renderList);
+
+        renderList();
+    </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayarlar | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content" style="max-width:520px;">
+
+                <div class="portal-card">
+                    <h2>Kullanıcı Adı / Şifre Değiştir</h2>
+                    <p class="p-inline-note" style="margin-bottom:18px;">
+                        Bu portalda tek giriş hesabı vardır. Burada değiştirdiğin bilgiler
+                        bir sonraki girişte geçerli olur; yalnızca bu tarayıcıda saklanır.
+                    </p>
+
+                    <div class="login-success" id="settingsSuccess" style="display:none; background-color:rgba(60,184,120,0.15); color:#2fa066; padding:10px 14px; border-radius:6px; font-size:13.5px; margin-bottom:18px;">
+                        Bilgiler güncellendi.
+                    </div>
+                    <div class="login-error" id="settingsError" style="display:none; background-color:rgba(192,57,43,0.12); color:#c0392b; padding:10px 14px; border-radius:6px; font-size:13.5px; margin-bottom:18px;"></div>
+
+                    <form id="settingsForm">
+                        <div class="p-field">
+                            <label for="setUsername">Kullanıcı Adı</label>
+                            <input type="text" id="setUsername" required>
+                        </div>
+                        <div class="p-field">
+                            <label for="setPassword">Yeni Şifre</label>
+                            <input type="password" id="setPassword" placeholder="Yeni şifre" required>
+                        </div>
+                        <div class="p-field">
+                            <label for="setPasswordConfirm">Yeni Şifre (Tekrar)</label>
+                            <input type="password" id="setPasswordConfirm" placeholder="Yeni şifreyi tekrar girin" required>
+                        </div>
+                        <button type="submit" class="p-btn p-btn-primary">Kaydet</button>
+                    </form>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        requireAdmin();
+        renderPortalChrome('ayarlar', 'Ayarlar', 'Portala giriş yapacak kullanıcı adı ve şifreyi buradan değiştirebilirsin.');
+
+        const current = getCredentials();
+        document.getElementById('setUsername').value = current.username;
+
+        document.getElementById('settingsForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const successBox = document.getElementById('settingsSuccess');
+            const errorBox = document.getElementById('settingsError');
+            successBox.style.display = 'none';
+            errorBox.style.display = 'none';
+
+            const username = document.getElementById('setUsername').value.trim();
+            const password = document.getElementById('setPassword').value;
+            const confirm = document.getElementById('setPasswordConfirm').value;
+
+            if (!username || !password) {
+                errorBox.textContent = 'Kullanıcı adı ve şifre boş bırakılamaz.';
+                errorBox.style.display = 'block';
+                return;
+            }
+            if (password !== confirm) {
+                errorBox.textContent = 'Girilen şifreler birbiriyle eşleşmiyor.';
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            setCredentials(username, password);
+            localStorage.setItem(PORTAL_KEYS.user, username);
+            document.getElementById('setPassword').value = '';
+            document.getElementById('setPasswordConfirm').value = '';
+            successBox.style.display = 'block';
+            renderPortalChrome('ayarlar', 'Ayarlar', 'Portala giriş yapacak kullanıcı adı ve şifreyi buradan değiştirebilirsin.');
+        });
+    </script>
+</body>
+</html>

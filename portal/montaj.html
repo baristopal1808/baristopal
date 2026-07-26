@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montaj Süreci | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-card">
+                    <h2>Yeni Montaj Kaydı</h2>
+                    <form id="montajForm">
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="montajCompany">Firma</label>
+                                <select id="montajCompany" required></select>
+                            </div>
+                            <div class="p-field">
+                                <label for="montajDate">Planlanan Tarih</label>
+                                <input type="date" id="montajDate">
+                            </div>
+                        </div>
+                        <div class="p-field">
+                            <label for="montajLocation">Lokasyon / İş Açıklaması</label>
+                            <input type="text" id="montajLocation" placeholder="Örn: Şantiye sahası - ekskavatör hidrolik hattı" required>
+                        </div>
+                        <div class="p-field">
+                            <label for="montajNotes">Notlar</label>
+                            <textarea id="montajNotes" placeholder="Varsa ek bilgi..."></textarea>
+                        </div>
+                        <button type="submit" class="p-btn p-btn-primary">Kaydı Oluştur</button>
+                    </form>
+                </div>
+
+                <div class="portal-card">
+                    <h2>Montaj Kayıtları</h2>
+                    <div class="p-table-wrap">
+                        <table class="p-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th><th>Firma</th><th>Lokasyon / İş</th>
+                                    <th>Planlanan Tarih</th><th>Durum</th><th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="montajBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderPortalChrome('montaj', 'Montaj Süreci', 'Saha montaj kayıtlarını oluşturun ve durumlarını takip edin.');
+
+        const MONTAJ_STATUSES = ['Planlandı', 'Sahada', 'Tamamlandı', 'İptal'];
+
+        function populateCompanySelect() {
+            const select = document.getElementById('montajCompany');
+            const companies = getCompanies();
+            select.innerHTML = '<option value="" disabled selected>Seçiniz</option>'
+                + companies.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
+        }
+
+        function renderMontaj() {
+            const list = getMontajList();
+            const body = document.getElementById('montajBody');
+            if (list.length === 0) {
+                body.innerHTML = '<tr><td colspan="6" class="p-table-empty">Henüz montaj kaydı yok.</td></tr>';
+                return;
+            }
+            body.innerHTML = list.map(m => `
+                <tr>
+                    <td>#${m.id}</td>
+                    <td>${escapeHtml(m.company || '-')}</td>
+                    <td>${escapeHtml(m.location || '-')}</td>
+                    <td>${m.plannedDate ? escapeHtml(m.plannedDate) : '-'}</td>
+                    <td>
+                        <select class="p-status-select" data-id="${m.id}">
+                            ${MONTAJ_STATUSES.map(s => `<option value="${s}" ${s === m.status ? 'selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td><button type="button" class="p-btn p-btn-danger p-btn-sm" data-delete="${m.id}">Sil</button></td>
+                </tr>
+            `).join('');
+
+            body.querySelectorAll('[data-id]').forEach(sel => {
+                sel.addEventListener('change', () => {
+                    updateMontajStatus(Number(sel.dataset.id), sel.value);
+                });
+            });
+            body.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    deleteMontaj(Number(btn.dataset.delete));
+                    renderMontaj();
+                });
+            });
+        }
+
+        document.getElementById('montajForm').addEventListener('submit', e => {
+            e.preventDefault();
+            addMontaj({
+                company: document.getElementById('montajCompany').value,
+                location: document.getElementById('montajLocation').value.trim(),
+                plannedDate: document.getElementById('montajDate').value,
+                notes: document.getElementById('montajNotes').value.trim()
+            });
+            e.target.reset();
+            populateCompanySelect();
+            renderMontaj();
+        });
+
+        populateCompanySelect();
+        renderMontaj();
+    </script>
+</body>
+</html>

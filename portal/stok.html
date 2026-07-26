@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stok Durumu | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-card">
+                    <div class="p-tabs" id="stokTabs"></div>
+                    <p class="p-inline-note" style="margin-bottom:18px;">
+                        Stok adedini ve kritik seviyeyi bu ekrandan güncelleyebilirsin; adet
+                        değişiklikleri sol menüdeki Stok Hareketleri'ne otomatik kaydedilir.
+                    </p>
+                    <div class="p-table-wrap">
+                        <table class="p-table">
+                            <thead>
+                                <tr><th>Kod</th><th>Ürün</th><th>Stok Miktarı</th><th>Birim</th><th>Kritik Seviye</th><th>Durum</th><th></th></tr>
+                            </thead>
+                            <tbody id="stokBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderPortalChrome('stok', 'Stok Durumu', 'Nipel, rakor, soket ve hortum kategorilerinde güncel stok seviyeleri.');
+
+        const CATEGORIES = ['nipel', 'rakor', 'soket', 'hortum'];
+        let activeCategory = 'nipel';
+
+        function renderTabs() {
+            document.getElementById('stokTabs').innerHTML = CATEGORIES.map(cat => `
+                <button type="button" class="p-tab-btn ${cat === activeCategory ? 'active' : ''}" data-cat="${cat}">
+                    ${STOK_CATEGORY_LABELS[cat]}
+                </button>
+            `).join('');
+            document.querySelectorAll('[data-cat]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeCategory = btn.dataset.cat;
+                    renderTabs();
+                    renderStokTable();
+                });
+            });
+        }
+
+        function renderStokTable() {
+            const data = getStok();
+            const items = data[activeCategory] || [];
+            const body = document.getElementById('stokBody');
+            if (items.length === 0) {
+                body.innerHTML = '<tr><td colspan="7" class="p-table-empty">Bu kategoride kayıt yok.</td></tr>';
+                return;
+            }
+            body.innerHTML = items.map((it, idx) => {
+                const durum = stokDurum(it.qty, it.critical);
+                return `
+                    <tr>
+                        <td>${escapeHtml(it.code || '-')}</td>
+                        <td>${escapeHtml(it.name)}</td>
+                        <td><input type="number" min="0" step="1" value="${it.qty}" class="p-status-select" style="width:90px;" data-qty-idx="${idx}"></td>
+                        <td>${escapeHtml(it.unit || 'Adet')}</td>
+                        <td><input type="number" min="0" step="1" value="${it.critical}" class="p-status-select" style="width:90px;" data-critical-idx="${idx}"></td>
+                        <td><span class="p-badge p-badge-${durum.key}">${durum.label}</span></td>
+                        <td><button type="button" class="p-btn p-btn-ghost p-btn-sm" data-save="${idx}">Kaydet</button></td>
+                    </tr>
+                `;
+            }).join('');
+
+            body.querySelectorAll('[data-save]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = Number(btn.dataset.save);
+                    const qtyInput = body.querySelector(`input[data-qty-idx="${idx}"]`);
+                    const criticalInput = body.querySelector(`input[data-critical-idx="${idx}"]`);
+                    updateStokQty(activeCategory, idx, Number(qtyInput.value) || 0);
+                    updateStokCritical(activeCategory, idx, Number(criticalInput.value) || 0);
+                    renderStokTable();
+                });
+            });
+        }
+
+        renderTabs();
+        renderStokTable();
+    </script>
+</body>
+</html>

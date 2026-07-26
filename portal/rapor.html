@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dönemsel Rapor | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-card">
+                    <div class="p-tabs" id="periodTypeTabs"></div>
+
+                    <div class="p-row" id="periodFields"></div>
+
+                    <div class="portal-stat-row" id="reportStats" style="margin-top:6px;"></div>
+                </div>
+
+                <div class="portal-card">
+                    <h2>Kategoriye Göre Sipariş Dağılımı</h2>
+                    <div class="p-table-wrap">
+                        <table class="p-table">
+                            <thead>
+                                <tr><th>Kategori</th><th>Sipariş Adedi</th><th>Toplam Miktar</th></tr>
+                            </thead>
+                            <tbody id="categoryBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderPortalChrome('rapor', 'Dönemsel Rapor', 'Aylık veya çeyreklik bazda sipariş, montaj ve maliyet özetleri.');
+
+        const now = new Date();
+        let periodType = 'aylik'; // 'aylik' | 'ceyreklik'
+        let selectedYear = now.getFullYear();
+        let selectedMonth = now.getMonth();       // 0-11
+        let selectedQuarter = Math.floor(now.getMonth() / 3) + 1; // 1-4
+
+        function renderPeriodTypeTabs() {
+            document.getElementById('periodTypeTabs').innerHTML = `
+                <button type="button" class="p-tab-btn ${periodType === 'aylik' ? 'active' : ''}" data-type="aylik">Aylık</button>
+                <button type="button" class="p-tab-btn ${periodType === 'ceyreklik' ? 'active' : ''}" data-type="ceyreklik">Çeyreklik</button>
+            `;
+            document.querySelectorAll('#periodTypeTabs [data-type]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    periodType = btn.dataset.type;
+                    renderPeriodTypeTabs();
+                    renderPeriodFields();
+                    computeAndRender();
+                });
+            });
+        }
+
+        function renderPeriodFields() {
+            const yearOptions = [];
+            for (let y = now.getFullYear() - 2; y <= now.getFullYear() + 1; y++) {
+                yearOptions.push(`<option value="${y}" ${y === selectedYear ? 'selected' : ''}>${y}</option>`);
+            }
+
+            if (periodType === 'aylik') {
+                document.getElementById('periodFields').innerHTML = `
+                    <div class="p-field">
+                        <label for="repMonth">Ay</label>
+                        <select id="repMonth">
+                            ${MONTH_NAMES.map((m, i) => `<option value="${i}" ${i === selectedMonth ? 'selected' : ''}>${m}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="p-field">
+                        <label for="repYear">Yıl</label>
+                        <select id="repYear">${yearOptions.join('')}</select>
+                    </div>
+                `;
+                document.getElementById('repMonth').addEventListener('change', e => { selectedMonth = Number(e.target.value); computeAndRender(); });
+            } else {
+                document.getElementById('periodFields').innerHTML = `
+                    <div class="p-field">
+                        <label for="repQuarter">Çeyrek</label>
+                        <select id="repQuarter">
+                            ${QUARTER_LABELS.map((q, i) => `<option value="${i + 1}" ${i + 1 === selectedQuarter ? 'selected' : ''}>${q}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="p-field">
+                        <label for="repYear">Yıl</label>
+                        <select id="repYear">${yearOptions.join('')}</select>
+                    </div>
+                `;
+                document.getElementById('repQuarter').addEventListener('change', e => { selectedQuarter = Number(e.target.value); computeAndRender(); });
+            }
+            document.getElementById('repYear').addEventListener('change', e => { selectedYear = Number(e.target.value); computeAndRender(); });
+        }
+
+        function currentRange() {
+            return periodType === 'aylik' ? monthRange(selectedYear, selectedMonth) : quarterRange(selectedYear, selectedQuarter);
+        }
+
+        function computeAndRender() {
+            const range = currentRange();
+            const orders = getOrders().filter(o => isWithinRange(o.createdAt, range));
+            const montajList = getMontajList().filter(m => isWithinRange(m.createdAt, range));
+            const costCalcs = getCostCalcs().filter(c => isWithinRange(c.createdAt, range));
+
+            const tamamlananMontaj = montajList.filter(m => m.status === 'Tamamlandı').length;
+            const toplamTeklifTutari = costCalcs.reduce((sum, c) => sum + (Number(c.total) || 0), 0);
+            const toplamSiparisMiktari = orders.reduce((sum, o) => sum + (Number(o.qty) || 0), 0);
+
+            const stats = [
+                { label: 'Sipariş Adedi', value: orders.length, qc: 'qc-violet' },
+                { label: 'Toplam Sipariş Miktarı', value: toplamSiparisMiktari, qc: 'qc-blue' },
+                { label: 'Tamamlanan Montaj', value: `${tamamlananMontaj} / ${montajList.length}`, qc: 'qc-green' },
+                { label: 'Toplam Teklif Tutarı', value: toplamTeklifTutari.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺', qc: 'qc-amber' }
+            ];
+            document.getElementById('reportStats').innerHTML = stats.map(s => `
+                <div class="portal-stat ${s.qc}">
+                    <div class="stat-num" style="font-size:20px;">${s.value}</div>
+                    <div class="stat-label">${s.label}</div>
+                </div>
+            `).join('');
+
+            const categories = ['Nipel', 'Rakor', 'Soket', 'Hortum'];
+            const body = document.getElementById('categoryBody');
+            const rows = categories.map(cat => {
+                const inCat = orders.filter(o => o.category === cat);
+                const qty = inCat.reduce((sum, o) => sum + (Number(o.qty) || 0), 0);
+                return { cat, count: inCat.length, qty };
+            });
+            if (rows.every(r => r.count === 0)) {
+                body.innerHTML = '<tr><td colspan="3" class="p-table-empty">Bu dönemde sipariş kaydı yok.</td></tr>';
+            } else {
+                body.innerHTML = rows.map(r => `
+                    <tr><td>${r.cat}</td><td>${r.count}</td><td>${r.qty}</td></tr>
+                `).join('');
+            }
+        }
+
+        renderPeriodTypeTabs();
+        renderPeriodFields();
+        computeAndRender();
+    </script>
+</body>
+</html>

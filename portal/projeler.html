@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeler | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-stat-row" id="statusDashboard"></div>
+
+                <div class="portal-card">
+                    <h2>Yeni Proje</h2>
+                    <form id="projeForm">
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="projeFirma">Firma</label>
+                                <select id="projeFirma" required></select>
+                            </div>
+                            <div class="p-field">
+                                <label for="projeAd">Proje Adı</label>
+                                <input type="text" id="projeAd" placeholder="Örn: Ekskavatör Hidrolik Hattı Yenileme" required>
+                            </div>
+                        </div>
+                        <div class="p-field">
+                            <label for="projeAciklama">Açıklama</label>
+                            <textarea id="projeAciklama" placeholder="Varsa ek bilgi..."></textarea>
+                        </div>
+                        <button type="submit" class="p-btn p-btn-primary">Projeyi Kaydet</button>
+                    </form>
+                </div>
+
+                <div class="portal-card">
+                    <h2>Proje Listesi</h2>
+                    <div class="p-tabs" id="filterTabs"></div>
+                    <div class="p-table-wrap">
+                        <table class="p-table">
+                            <thead>
+                                <tr><th>#</th><th>Firma</th><th>Proje Adı</th><th>Açıklama</th><th>Durum</th><th></th></tr>
+                            </thead>
+                            <tbody id="projeBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderPortalChrome('projeler', 'Projeler', 'Sevk edilenler, devam edenler ve henüz başlanmamış projelerin durumu.');
+
+        let activeFilter = 'Tümü';
+
+        function populateCompanySelect() {
+            const select = document.getElementById('projeFirma');
+            const companies = getCompanies();
+            select.innerHTML = '<option value="" disabled selected>Seçiniz</option>'
+                + companies.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
+        }
+
+        function renderDashboard() {
+            const list = getProjeler();
+            const counts = {};
+            PROJE_STATUSES.forEach(s => { counts[s] = list.filter(p => p.status === s).length; });
+
+            const tiles = [
+                { label: 'Henüz Başlanmadı', value: counts['Henüz Başlanmadı'], qc: 'qc-blue' },
+                { label: 'Devam Ediyor', value: counts['Devam Ediyor'], qc: 'qc-amber' },
+                { label: 'Sevk Edildi', value: counts['Sevk Edildi'], qc: 'qc-green' }
+            ];
+            document.getElementById('statusDashboard').innerHTML = tiles.map(t => `
+                <div class="portal-stat ${t.qc}">
+                    <div class="stat-num">${t.value}</div>
+                    <div class="stat-label">${t.label}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderFilterTabs() {
+            const tabs = ['Tümü', ...PROJE_STATUSES];
+            document.getElementById('filterTabs').innerHTML = tabs.map(t => `
+                <button type="button" class="p-tab-btn ${t === activeFilter ? 'active' : ''}" data-filter="${t}">${t}</button>
+            `).join('');
+            document.querySelectorAll('[data-filter]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeFilter = btn.dataset.filter;
+                    renderFilterTabs();
+                    renderProjeTable();
+                });
+            });
+        }
+
+        function renderProjeTable() {
+            const all = getProjeler();
+            const list = activeFilter === 'Tümü' ? all : all.filter(p => p.status === activeFilter);
+            const body = document.getElementById('projeBody');
+            if (list.length === 0) {
+                body.innerHTML = '<tr><td colspan="6" class="p-table-empty">Bu durumda proje kaydı yok.</td></tr>';
+                return;
+            }
+            body.innerHTML = list.map(p => `
+                <tr>
+                    <td>#${p.id}</td>
+                    <td>${escapeHtml(p.company || '-')}</td>
+                    <td>${escapeHtml(p.name || '-')}</td>
+                    <td>${escapeHtml(p.description || '-')}</td>
+                    <td>
+                        <select class="p-status-select" data-id="${p.id}">
+                            ${PROJE_STATUSES.map(s => `<option value="${s}" ${s === p.status ? 'selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td><button type="button" class="p-btn p-btn-danger p-btn-sm" data-delete="${p.id}">Sil</button></td>
+                </tr>
+            `).join('');
+
+            body.querySelectorAll('[data-id]').forEach(sel => {
+                sel.addEventListener('change', () => {
+                    updateProjeStatus(Number(sel.dataset.id), sel.value);
+                    renderDashboard();
+                    renderProjeTable();
+                });
+            });
+            body.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    deleteProje(Number(btn.dataset.delete));
+                    renderDashboard();
+                    renderProjeTable();
+                });
+            });
+        }
+
+        document.getElementById('projeForm').addEventListener('submit', e => {
+            e.preventDefault();
+            addProje({
+                company: document.getElementById('projeFirma').value,
+                name: document.getElementById('projeAd').value.trim(),
+                description: document.getElementById('projeAciklama').value.trim()
+            });
+            e.target.reset();
+            populateCompanySelect();
+            renderDashboard();
+            renderProjeTable();
+        });
+
+        populateCompanySelect();
+        renderDashboard();
+        renderFilterTabs();
+        renderProjeTable();
+    </script>
+</body>
+</html>

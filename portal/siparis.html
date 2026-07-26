@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sipariş Oluştur | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-card">
+                    <h2>Yeni Sipariş</h2>
+                    <form id="orderForm">
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="orderCompany">Firma</label>
+                                <select id="orderCompany" required></select>
+                            </div>
+                            <div class="p-field">
+                                <label for="orderCategory">Ürün Kategorisi</label>
+                                <select id="orderCategory" required>
+                                    <option value="" disabled selected>Seçiniz</option>
+                                    <option value="nipel">Nipel</option>
+                                    <option value="rakor">Rakor</option>
+                                    <option value="soket">Soket</option>
+                                    <option value="hortum">Hortum</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="orderProduct">Ürün</label>
+                                <select id="orderProduct" required disabled>
+                                    <option value="" disabled selected>Önce kategori seçin</option>
+                                </select>
+                            </div>
+                            <div class="p-field">
+                                <label for="orderQty">Adet / Miktar</label>
+                                <input type="number" id="orderQty" min="1" step="1" placeholder="Örn: 50" required>
+                            </div>
+                        </div>
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="orderDueDate">Teslim Tarihi</label>
+                                <input type="date" id="orderDueDate">
+                            </div>
+                        </div>
+                        <div class="p-field">
+                            <label for="orderNotes">Notlar</label>
+                            <textarea id="orderNotes" placeholder="Varsa ek bilgi..."></textarea>
+                        </div>
+
+                        <div class="p-summary-box" style="margin-bottom:20px;">
+                            <dl>
+                                <dt>Birim Fiyat</dt><dd id="orderUnitPrice">-</dd>
+                                <dt class="p-total-row">Tahmini Maliyet</dt><dd class="p-total-row" id="orderEstimatedCost">-</dd>
+                            </dl>
+                        </div>
+
+                        <button type="submit" class="p-btn p-btn-primary">Siparişi Kaydet</button>
+                    </form>
+                </div>
+
+                <div class="portal-card">
+                    <h2>Siparişler</h2>
+                    <div class="p-table-wrap">
+                        <table class="p-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th><th>Firma</th><th>Kategori</th><th>Ürün</th>
+                                    <th>Adet</th><th>Tahmini Maliyet</th><th>Teslim Tarihi</th><th>Durum</th><th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderPortalChrome('siparis', 'Sipariş Oluştur', 'Yeni sipariş kaydedin, mevcut siparişleri yönetin.');
+
+        const ORDER_STATUSES = ['Yeni', 'Hazırlanıyor', 'Tamamlandı', 'İptal'];
+
+        function populateCompanySelect() {
+            const select = document.getElementById('orderCompany');
+            const companies = getCompanies();
+            select.innerHTML = '<option value="" disabled selected>Seçiniz</option>'
+                + companies.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
+        }
+
+        function formatTL(value) {
+            return (Number(value) || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+        }
+
+        function currentSelectedItem() {
+            const category = document.getElementById('orderCategory').value;
+            const code = document.getElementById('orderProduct').value;
+            if (!category || !code) return null;
+            const items = getStok()[category] || [];
+            return items.find(it => it.code === code) || null;
+        }
+
+        function updateOrderSummary() {
+            const item = currentSelectedItem();
+            const qty = Number(document.getElementById('orderQty').value) || 0;
+            if (!item) {
+                document.getElementById('orderUnitPrice').textContent = '-';
+                document.getElementById('orderEstimatedCost').textContent = '-';
+                return;
+            }
+            document.getElementById('orderUnitPrice').textContent = `${formatTL(item.unitCost)} / ${escapeHtml(item.unit || 'Adet')}`;
+            document.getElementById('orderEstimatedCost').textContent = formatTL((item.unitCost || 0) * qty);
+        }
+
+        function populateProductSelect() {
+            const category = document.getElementById('orderCategory').value;
+            const select = document.getElementById('orderProduct');
+            const items = category ? (getStok()[category] || []) : [];
+
+            if (!category) {
+                select.innerHTML = '<option value="" disabled selected>Önce kategori seçin</option>';
+                select.disabled = true;
+            } else if (items.length === 0) {
+                select.innerHTML = '<option value="" disabled selected>Bu kategoride envanter kartı yok</option>';
+                select.disabled = true;
+            } else {
+                select.disabled = false;
+                select.innerHTML = '<option value="" disabled selected>Seçiniz</option>'
+                    + items.map(it => `<option value="${escapeHtml(it.code)}">${escapeHtml(it.code)} — ${escapeHtml(it.name)}</option>`).join('');
+            }
+            updateOrderSummary();
+        }
+
+        document.getElementById('orderCategory').addEventListener('change', populateProductSelect);
+        document.getElementById('orderProduct').addEventListener('change', updateOrderSummary);
+        document.getElementById('orderQty').addEventListener('input', updateOrderSummary);
+
+        function renderOrders() {
+            const orders = getOrders();
+            const body = document.getElementById('ordersBody');
+            if (orders.length === 0) {
+                body.innerHTML = '<tr><td colspan="9" class="p-table-empty">Henüz sipariş yok.</td></tr>';
+                return;
+            }
+            body.innerHTML = orders.map(o => `
+                <tr>
+                    <td>#${o.id}</td>
+                    <td>${escapeHtml(o.company || '-')}</td>
+                    <td>${escapeHtml(STOK_CATEGORY_LABELS[o.category] || o.category || '-')}</td>
+                    <td>${escapeHtml(o.product || '-')}</td>
+                    <td>${escapeHtml(String(o.qty ?? '-'))}</td>
+                    <td>${formatTL(o.estimatedCost)}</td>
+                    <td>${o.dueDate ? escapeHtml(o.dueDate) : '-'}</td>
+                    <td>
+                        <select class="p-status-select" data-id="${o.id}">
+                            ${ORDER_STATUSES.map(s => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td><button type="button" class="p-btn p-btn-danger p-btn-sm" data-delete="${o.id}">Sil</button></td>
+                </tr>
+            `).join('');
+
+            body.querySelectorAll('[data-id]').forEach(sel => {
+                sel.addEventListener('change', () => {
+                    updateOrderStatus(Number(sel.dataset.id), sel.value);
+                });
+            });
+            body.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    deleteOrder(Number(btn.dataset.delete));
+                    renderOrders();
+                });
+            });
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const item = currentSelectedItem();
+            const qty = Number(document.getElementById('orderQty').value) || 0;
+            addOrder({
+                company: document.getElementById('orderCompany').value,
+                category: document.getElementById('orderCategory').value,
+                productCode: item ? item.code : '',
+                product: item ? item.name : '',
+                qty,
+                unitCost: item ? (item.unitCost || 0) : 0,
+                estimatedCost: item ? (item.unitCost || 0) * qty : 0,
+                dueDate: document.getElementById('orderDueDate').value,
+                notes: document.getElementById('orderNotes').value.trim()
+            });
+            e.target.reset();
+            populateCompanySelect();
+            populateProductSelect();
+            renderOrders();
+        });
+
+        populateCompanySelect();
+        populateProductSelect();
+        renderOrders();
+    </script>
+</body>
+</html>

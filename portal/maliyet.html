@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maliyet Hesabı | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-card">
+                    <h2>Maliyet Hesapla</h2>
+                    <form id="costForm">
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="costCompany">Firma</label>
+                                <select id="costCompany" required></select>
+                            </div>
+                            <div class="p-field">
+                                <label for="costCategory">Ürün Kategorisi</label>
+                                <select id="costCategory" required>
+                                    <option value="" disabled selected>Seçiniz</option>
+                                    <option value="Nipel">Nipel</option>
+                                    <option value="Rakor">Rakor</option>
+                                    <option value="Soket">Soket</option>
+                                    <option value="Hortum">Hortum</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="p-field">
+                            <label for="costProduct">Ürün / Ölçü Açıklaması</label>
+                            <input type="text" id="costProduct" placeholder="Örn: SAE 100 R2 AT 3/8&quot;">
+                        </div>
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="costQty">Adet</label>
+                                <input type="number" id="costQty" min="1" step="1" value="1">
+                            </div>
+                            <div class="p-field">
+                                <label for="costUnitPrice">Birim Fiyat (₺)</label>
+                                <input type="number" id="costUnitPrice" min="0" step="0.01" value="0">
+                            </div>
+                        </div>
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="costLabor">İşçilik / Montaj Ücreti (₺)</label>
+                                <input type="number" id="costLabor" min="0" step="0.01" value="0">
+                            </div>
+                            <div class="p-field">
+                                <label for="costVat">KDV Oranı (%)</label>
+                                <input type="number" id="costVat" min="0" step="1" value="20">
+                            </div>
+                        </div>
+
+                        <div class="p-summary-box">
+                            <dl>
+                                <dt>Ara Toplam</dt><dd id="sumSubtotal">0,00 ₺</dd>
+                                <dt id="sumVatLabel">KDV (%20)</dt><dd id="sumVat">0,00 ₺</dd>
+                                <dt class="p-total-row">Genel Toplam</dt><dd class="p-total-row" id="sumTotal">0,00 ₺</dd>
+                            </dl>
+                        </div>
+
+                        <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
+                            <button type="submit" class="p-btn p-btn-primary">Teklifi Kaydet</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="portal-card">
+                    <h2>Kayıtlı Maliyet Hesapları</h2>
+                    <div class="p-table-wrap">
+                        <table class="p-table">
+                            <thead>
+                                <tr>
+                                    <th>Firma</th><th>Ürün</th><th>Adet</th>
+                                    <th>Birim Fiyat</th><th>Genel Toplam</th><th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="costBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        renderPortalChrome('maliyet', 'Maliyet Hesabı', 'Ürün, adet ve işçilik bilgisine göre teklif maliyeti hesaplayın.');
+
+        function formatTL(value) {
+            return value.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+        }
+
+        function populateCompanySelect() {
+            const select = document.getElementById('costCompany');
+            const companies = getCompanies();
+            select.innerHTML = '<option value="" disabled selected>Seçiniz</option>'
+                + companies.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
+        }
+
+        function currentCalc() {
+            const qty = Number(document.getElementById('costQty').value) || 0;
+            const unitPrice = Number(document.getElementById('costUnitPrice').value) || 0;
+            const labor = Number(document.getElementById('costLabor').value) || 0;
+            const vatRate = Number(document.getElementById('costVat').value) || 0;
+            const subtotal = qty * unitPrice + labor;
+            const vat = subtotal * (vatRate / 100);
+            const total = subtotal + vat;
+            return { qty, unitPrice, labor, vatRate, subtotal, vat, total };
+        }
+
+        function updateSummary() {
+            const c = currentCalc();
+            document.getElementById('sumSubtotal').textContent = formatTL(c.subtotal);
+            document.getElementById('sumVatLabel').textContent = `KDV (%${c.vatRate})`;
+            document.getElementById('sumVat').textContent = formatTL(c.vat);
+            document.getElementById('sumTotal').textContent = formatTL(c.total);
+        }
+
+        ['costQty', 'costUnitPrice', 'costLabor', 'costVat'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateSummary);
+        });
+
+        function renderCostList() {
+            const list = getCostCalcs();
+            const body = document.getElementById('costBody');
+            if (list.length === 0) {
+                body.innerHTML = '<tr><td colspan="6" class="p-table-empty">Henüz kaydedilmiş maliyet hesabı yok.</td></tr>';
+                return;
+            }
+            body.innerHTML = list.map(c => `
+                <tr>
+                    <td>${escapeHtml(c.company || '-')}</td>
+                    <td>${escapeHtml(c.product || '-')}</td>
+                    <td>${escapeHtml(String(c.qty ?? '-'))}</td>
+                    <td>${formatTL(c.unitPrice || 0)}</td>
+                    <td><strong>${formatTL(c.total || 0)}</strong></td>
+                    <td><button type="button" class="p-btn p-btn-danger p-btn-sm" data-delete="${c.id}">Sil</button></td>
+                </tr>
+            `).join('');
+            body.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    deleteCostCalc(Number(btn.dataset.delete));
+                    renderCostList();
+                });
+            });
+        }
+
+        document.getElementById('costForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const c = currentCalc();
+            addCostCalc({
+                company: document.getElementById('costCompany').value,
+                category: document.getElementById('costCategory').value,
+                product: document.getElementById('costProduct').value.trim(),
+                qty: c.qty,
+                unitPrice: c.unitPrice,
+                labor: c.labor,
+                vatRate: c.vatRate,
+                subtotal: c.subtotal,
+                vat: c.vat,
+                total: c.total
+            });
+            renderCostList();
+        });
+
+        populateCompanySelect();
+        updateSummary();
+        renderCostList();
+    </script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envanter Girişi | Fibar Hidrolik Portalı</title>
+    <script>
+        if (localStorage.getItem('fibarPortalAuth') !== 'true') {
+            window.location.replace('../portal-giris.html');
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('fibarPortalTheme') || 'dark');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar" id="portalSidebar"></aside>
+        <div class="portal-main">
+            <header class="portal-topbar" id="portalTopbar"></header>
+            <main class="portal-content">
+
+                <div class="portal-card">
+                    <h2>Yeni Envanter Kartı</h2>
+                    <p class="p-inline-note" style="margin-bottom:18px;">
+                        Bu ekran yalnızca admin girişine özeldir. Malzeme kodunu kendin
+                        belirlersin; her kod yalnızca bir kartta kullanılabilir, aynı kod
+                        ikinci bir karta verilemez.
+                    </p>
+                    <div class="login-error" id="envKodError" style="display:none; background-color:rgba(192,57,43,0.12); color:#c0392b; padding:10px 14px; border-radius:6px; font-size:13.5px; margin-bottom:18px;"></div>
+                    <form id="envanterForm">
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="envKod">Malzeme Kodu</label>
+                                <input type="text" id="envKod" placeholder="Örn: FBR00001, MLZ-001 veya istediğiniz herhangi bir kod" required>
+                            </div>
+                            <div class="p-field">
+                                <label for="envGrup">Malzeme Grubu</label>
+                                <select id="envGrup" required>
+                                    <option value="" disabled selected>Seçiniz</option>
+                                    <option value="nipel">Nipel</option>
+                                    <option value="rakor">Rakor</option>
+                                    <option value="soket">Soket</option>
+                                    <option value="hortum">Hortum</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="p-field">
+                            <label for="envAciklama">Malzeme Açıklaması</label>
+                            <input type="text" id="envAciklama" placeholder="Örn: 1/2&quot; BSP Düz Rakor" required>
+                        </div>
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="envBirim">Takip Birimi</label>
+                                <select id="envBirim" required>
+                                    <option value="" disabled selected>Seçiniz</option>
+                                </select>
+                            </div>
+                            <div class="p-field">
+                                <label for="envKritik">Kritik Stok Seviyesi</label>
+                                <input type="number" id="envKritik" min="0" step="1" value="20">
+                            </div>
+                        </div>
+                        <div class="p-field">
+                            <label for="envBirimMaliyet">Birim Maliyet (₺)</label>
+                            <input type="number" id="envBirimMaliyet" min="0" step="0.01" placeholder="Örn: 45.50">
+                        </div>
+                        <p class="p-inline-note" style="margin-top:-8px; margin-bottom:18px;">
+                            Bu ekranda yalnızca kart (malzeme kodu) tanımlanır; stok adedi
+                            daha sonra <a href="stok.html">Stok Durumu</a> ekranından girilir/güncellenir.
+                        </p>
+                        <div class="p-row">
+                            <div class="p-field">
+                                <label for="envTarih">Giriş Tarihi</label>
+                                <input type="date" id="envTarih" required>
+                            </div>
+                            <div class="p-field">
+                                <label for="envKullanici">Girişi Yapan Kullanıcı</label>
+                                <input type="text" id="envKullanici" readonly>
+                            </div>
+                        </div>
+                        <button type="submit" class="p-btn p-btn-primary">Envanter Kartını Kaydet</button>
+                    </form>
+                </div>
+
+                <div class="portal-card">
+                    <h2>Toplu İçe Aktar (Excel/CSV)</h2>
+                    <p class="p-inline-note" style="margin-bottom:18px;">
+                        Çok sayıda kartı tek tek girmek yerine
+                        <a href="envanter-sablonu.csv" download>şablon dosyasını indirip</a> Excel'de
+                        doldurduktan sonra buradan yükleyebilirsin. Malzeme Grubu "Hortum" olan
+                        satırlarda Takip Birimi hücresini boş bırakırsan otomatik olarak
+                        "Metre" atanır.
+                    </p>
+                    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                        <input type="file" id="importFile" accept=".csv">
+                        <button type="button" class="p-btn p-btn-primary p-btn-sm" id="importBtn">İçe Aktar</button>
+                    </div>
+                    <div id="importResult" style="margin-top:14px; display:none;"></div>
+                </div>
+
+                <div class="portal-card">
+                    <h2>Bu Oturumda Eklenen Kayıtlar</h2>
+                    <div class="p-table-wrap">
+                        <table class="p-table">
+                            <thead>
+                                <tr><th>Kod</th><th>Açıklama</th><th>Grup</th><th>Birim</th><th>Birim Maliyet</th><th>Tarih</th><th>Giren</th></tr>
+                            </thead>
+                            <tbody id="sessionBody">
+                                <tr><td colspan="7" class="p-table-empty">Henüz bu oturumda kayıt eklenmedi.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="p-inline-note">
+                        Tüm envanter kartları <a href="envanter-listesi.html">Envanter Listesi</a> ekranından
+                        aranıp filtrelenebilir; stok adetleri <a href="stok.html">Stok Durumu</a> ekranından
+                        kategoriye göre görüntülenip güncellenebilir.
+                    </p>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+    <script>
+        guardPortalPage();
+        requireAdmin();
+        renderPortalChrome('envanter', 'Envanter Girişi', 'Stoğa yeni malzeme kartı girin — malzeme kodunu kendin belirlersin.');
+
+        const sessionAdded = [];
+
+        document.getElementById('envBirim').innerHTML += STOK_UNITS.map(u => `<option value="${u}">${u}</option>`).join('');
+        document.getElementById('envKullanici').value = currentUser();
+        document.getElementById('envTarih').value = new Date().toISOString().slice(0, 10);
+
+        // Hortum seçilince Takip Birimi otomatik olarak Metre'ye ayarlanır (yine de değiştirilebilir).
+        document.getElementById('envGrup').addEventListener('change', e => {
+            if (e.target.value === 'hortum') {
+                document.getElementById('envBirim').value = 'Metre';
+            }
+        });
+
+        function renderSessionTable() {
+            const body = document.getElementById('sessionBody');
+            if (sessionAdded.length === 0) {
+                body.innerHTML = '<tr><td colspan="7" class="p-table-empty">Henüz bu oturumda kayıt eklenmedi.</td></tr>';
+                return;
+            }
+            body.innerHTML = sessionAdded.map(item => `
+                <tr>
+                    <td><strong>${escapeHtml(item.code)}</strong></td>
+                    <td>${escapeHtml(item.name)}</td>
+                    <td>${escapeHtml(STOK_CATEGORY_LABELS[item.category] || item.category)}</td>
+                    <td>${escapeHtml(item.unit)}</td>
+                    <td>${item.unitCost ? escapeHtml(item.unitCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })) + ' ₺' : '-'}</td>
+                    <td>${escapeHtml(item.entryDate)}</td>
+                    <td>${escapeHtml(item.createdBy)}</td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('envanterForm').addEventListener('submit', e => {
+            e.preventDefault();
+
+            const errorBox = document.getElementById('envKodError');
+            errorBox.style.display = 'none';
+
+            const category = document.getElementById('envGrup').value;
+            const code = document.getElementById('envKod').value.trim();
+
+            if (stokCodeExists(code)) {
+                errorBox.textContent = `"${code}" kodu zaten kullanılıyor. Lütfen farklı bir malzeme kodu girin.`;
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            const item = {
+                code,
+                name: document.getElementById('envAciklama').value.trim(),
+                unit: document.getElementById('envBirim').value,
+                qty: 0,
+                critical: Number(document.getElementById('envKritik').value) || 0,
+                unitCost: Number(document.getElementById('envBirimMaliyet').value) || 0,
+                entryDate: document.getElementById('envTarih').value,
+                createdBy: currentUser(),
+                createdAt: new Date().toISOString()
+            };
+
+            const saved = addStokItem(category, item);
+            if (!saved) {
+                errorBox.textContent = `"${code}" kodu zaten kullanılıyor. Lütfen farklı bir malzeme kodu girin.`;
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            sessionAdded.unshift({ ...item, category });
+            renderSessionTable();
+
+            e.target.reset();
+            document.getElementById('envKullanici').value = currentUser();
+            document.getElementById('envTarih').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('envKritik').value = 20;
+        });
+
+        /* --- Toplu İçe Aktar (CSV) --- */
+        // Basit RFC4180 CSV ayrıştırıcı: tırnak içindeki virgül/yeni satırları da destekler.
+        function parseCsv(text) {
+            const rows = [];
+            let field = '', row = [], inQuotes = false;
+            text = text.replace(/\r\n/g, '\n').replace(/^﻿/, '');
+            for (let i = 0; i < text.length; i++) {
+                const ch = text[i];
+                if (inQuotes) {
+                    if (ch === '"') {
+                        if (text[i + 1] === '"') { field += '"'; i++; } else { inQuotes = false; }
+                    } else field += ch;
+                } else if (ch === '"') {
+                    inQuotes = true;
+                } else if (ch === ',') {
+                    row.push(field); field = '';
+                } else if (ch === '\n') {
+                    row.push(field); rows.push(row); row = []; field = '';
+                } else {
+                    field += ch;
+                }
+            }
+            if (field.length || row.length) { row.push(field); rows.push(row); }
+            return rows.filter(r => r.some(v => v.trim() !== ''));
+        }
+
+        function grupKeyFromLabel(label) {
+            const target = (label || '').trim().toLowerCase();
+            return Object.keys(STOK_CATEGORY_LABELS).find(k => STOK_CATEGORY_LABELS[k].toLowerCase() === target) || null;
+        }
+
+        document.getElementById('importBtn').addEventListener('click', () => {
+            const fileInput = document.getElementById('importFile');
+            const resultBox = document.getElementById('importResult');
+            const file = fileInput.files[0];
+            if (!file) {
+                resultBox.style.display = 'block';
+                resultBox.innerHTML = '<p class="p-inline-note" style="color:var(--status-iptal);">Önce bir CSV dosyası seçin.</p>';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                const rows = parseCsv(String(reader.result));
+                const dataRows = rows.slice(1); // ilk satır başlık
+
+                let added = 0;
+                const duplicateCodes = [];
+                const invalidRows = [];
+                const today = new Date().toISOString().slice(0, 10);
+
+                dataRows.forEach((r, idx) => {
+                    const [kodRaw, aciklamaRaw, grupRaw, birimRaw, kritikRaw, maliyetRaw] = r.map(v => (v || '').trim());
+                    const grupKey = grupKeyFromLabel(grupRaw);
+
+                    if (!kodRaw || !aciklamaRaw || !grupKey) {
+                        invalidRows.push(idx + 2); // Excel'deki satır numarası (başlık dahil)
+                        return;
+                    }
+                    if (stokCodeExists(kodRaw)) {
+                        duplicateCodes.push(kodRaw);
+                        return;
+                    }
+
+                    const birim = birimRaw || (grupKey === 'hortum' ? 'Metre' : 'Adet');
+                    const saved = addStokItem(grupKey, {
+                        code: kodRaw,
+                        name: aciklamaRaw,
+                        unit: birim,
+                        qty: 0,
+                        critical: Number(kritikRaw) || 20,
+                        unitCost: Number(maliyetRaw) || 0,
+                        entryDate: today,
+                        createdBy: currentUser(),
+                        createdAt: new Date().toISOString()
+                    });
+                    if (saved) {
+                        added++;
+                        sessionAdded.unshift({ ...saved, category: grupKey });
+                    }
+                });
+
+                renderSessionTable();
+
+                let summary = `<p class="p-inline-note" style="color:var(--status-tamamlandi);"><strong>${added}</strong> envanter kartı başarıyla eklendi.</p>`;
+                if (duplicateCodes.length) {
+                    summary += `<p class="p-inline-note" style="color:var(--status-hazirlaniyor);">Şu kodlar zaten kayıtlı olduğu için atlandı: ${duplicateCodes.map(escapeHtml).join(', ')}</p>`;
+                }
+                if (invalidRows.length) {
+                    summary += `<p class="p-inline-note" style="color:var(--status-iptal);">Şu satırlarda eksik/hatalı bilgi olduğu için atlandı: ${invalidRows.join(', ')}</p>`;
+                }
+                resultBox.style.display = 'block';
+                resultBox.innerHTML = summary;
+                fileInput.value = '';
+            };
+            reader.readAsText(file, 'utf-8');
+        });
+    </script>
+</body>
+</html>
