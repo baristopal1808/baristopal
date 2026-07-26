@@ -266,7 +266,8 @@
             transition: opacity 0.35s ease, transform 0.35s ease;
         }
         .hose-preview-art.visible { opacity: 1; transform: translateY(0) scale(1); }
-        .hose-preview-art svg { width: 100%; height: auto; display: block; }
+        .hose-preview-art svg,
+        .hose-preview-art img { width: 100%; height: auto; display: block; }
         .hose-preview-placeholder {
             color: #9aa08f;
             font-size: 12.5px;
@@ -386,6 +387,58 @@
             .wizard-nav { flex-direction: column-reverse; gap: 12px; }
             .wizard-nav .btn { width: 100%; }
             .field-row { grid-template-columns: 1fr; }
+        }
+
+        /* Hortum önerisi rozeti */
+        .tag-recommended {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background-color: rgba(43, 108, 176, 0.12);
+            color: var(--accent-blue);
+            font-size: 11px;
+            font-weight: 700;
+            vertical-align: 1px;
+        }
+
+        /* "Emin misiniz?" onay modalı */
+        .confirm-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .confirm-overlay.visible { display: flex; }
+        .confirm-box {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 30px 28px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+        }
+        .confirm-box h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        .confirm-box p {
+            font-size: 14.5px;
+            color: #444;
+            margin-bottom: 22px;
+        }
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .confirm-actions .btn { flex: 1; }
+        @media (max-width: 480px) {
+            .confirm-actions { flex-direction: column; }
         }
     </style>
 </head>
@@ -627,6 +680,17 @@
         </div>
     </div>
 
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-box">
+            <h3>Emin misiniz?</h3>
+            <p id="confirmText"></p>
+            <div class="confirm-actions">
+                <button type="button" class="btn btn-ghost" id="confirmCancel">Vazgeç, değiştireyim</button>
+                <button type="button" class="btn btn-primary" id="confirmProceed">Evet, devam et</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const steps = ['1', '2', '3', '4'];
         let currentIndex = 0;
@@ -739,6 +803,35 @@
                 + '<path d="M34 24 L40 36 M50 24 L56 36 M66 24 L72 36 M82 24 L88 36 M98 24 L104 36 M114 24 L120 36" stroke-width="1" opacity="0.5"/>'
                 + '</svg>'
         };
+
+        // Gerçek hortum kesit fotoğrafları (bkz. "hortum görselleri" klasörü, ASCII
+        // isimlerle "hortum-gorselleri" altına kopyalandı). Eşleşme yoksa (ör. R4,
+        // fren hatları) yukarıdaki vektörel çizim yedek olarak kullanılır.
+        const hoseImages = {
+            'r1-1sn': { normal: 'hortum-gorselleri/r1-normal.png', highTemp: 'hortum-gorselleri/r1-yuksek-sicaklik.png' },
+            'r2at-2sn': { normal: 'hortum-gorselleri/r2-normal.png', highTemp: 'hortum-gorselleri/r2-yuksek-sicaklik.png' },
+            '1sc': { normal: 'hortum-gorselleri/1sc.png' },
+            '2sc': { normal: 'hortum-gorselleri/2sc.png' },
+            '1sc-ikiz': { normal: 'hortum-gorselleri/ikiz-1sc.png' },
+            '2sc-ikiz': { normal: 'hortum-gorselleri/ikiz-2sc.png' },
+            '4sp': { normal: 'hortum-gorselleri/4sp.png' },
+            '4sh': { normal: 'hortum-gorselleri/4sh.png' },
+            '2sc-compact': { normal: 'hortum-gorselleri/2sc-compact.png' },
+            'x5000': { normal: 'hortum-gorselleri/x5000.png' },
+            'x6000': { normal: 'hortum-gorselleri/x6000.png' },
+            'r5': { normal: 'hortum-gorselleri/r5.png' },
+            'r6': { normal: 'hortum-gorselleri/r6.png' },
+            'r3': { normal: 'hortum-gorselleri/r3.png' }
+        };
+
+        function hoseArtHtml(hose) {
+            const img = hoseImages[hose.id];
+            if (img) {
+                const src = (answers.highTemp && hose.hasHighTemp && img.highTemp) ? img.highTemp : img.normal;
+                return `<img src="${src}" alt="${hose.label}">`;
+            }
+            return hoseVisuals[hose.visual] || '';
+        }
 
         const headTypeInfo = {
             bsp: { label: 'BSP', socket: 'BSP Soket' },
@@ -855,6 +948,10 @@
             }
         }
 
+        // O anki çap+basınç için "önerilen" (istenen basıncı karşılayan en düşük,
+        // dolayısıyla en yakın/en uygun) hortumun id'si. Basınç girilmemişse null.
+        let currentRecommendedHoseId = null;
+
         // Sağ panelde seçilen hortumun çizimini ve adını gösterir; seçim
         // değişince önce yumuşakça kaybolur, sonra yeni görselle belirir.
         function updateHosePreview() {
@@ -868,15 +965,17 @@
                 setTimeout(() => {
                     hosePreviewArt.innerHTML = '';
                     hosePreviewCaption.textContent = '';
-                    hosePreviewSub.textContent = '';
+                    hosePreviewSub.innerHTML = '';
                 }, 200);
                 return;
             }
             setTimeout(() => {
-                hosePreviewArt.innerHTML = hoseVisuals[hose.visual] || '';
+                hosePreviewArt.innerHTML = hoseArtHtml(hose);
                 hosePreviewCaption.textContent = hoseCaptionText(hose);
                 const entry = hose.diameters.find(d => d.size === answers.diameter);
-                hosePreviewSub.textContent = entry ? `${answers.diameter} · maks. ${entry.cb} bar` : '';
+                const isRecommended = currentRecommendedHoseId && hose.id === currentRecommendedHoseId;
+                const tag = isRecommended ? '<span class="tag-recommended">Önerilen</span>' : '';
+                hosePreviewSub.innerHTML = entry ? `${answers.diameter} · maks. ${entry.cb} bar${tag}` : '';
                 requestAnimationFrame(() => {
                     hosePreviewArt.classList.add('visible');
                     hosePreviewCaption.classList.add('visible');
@@ -886,13 +985,15 @@
         }
 
         // Adım 2'de önce çap, sonra çalışma basıncı girilir; hortum tipi listesi
-        // ikisine birden göre filtrelenir (o çapta, istenen basıncı karşılayan tipler).
+        // ikisine birden göre filtrelenir (o çapta, istenen basıncı karşılayan tipler),
+        // basınca en yakın (en düşük yeterli) hortum otomatik seçilip "Önerilen" etiketlenir.
         function populateHoseTypeOptions() {
             step2Layout.classList.toggle('has-hose-panel', hoseTypeRequired());
 
             if (!hoseTypeRequired()) {
                 hoseTypeField.classList.add('hidden');
                 hoseTypeSelect.removeAttribute('required');
+                currentRecommendedHoseId = null;
                 if (answers.hoseType) { answers.hoseType = ''; updateHosePreview(); }
                 else updateHighTempOption();
                 return;
@@ -902,6 +1003,7 @@
 
             if (!answers.diameter) {
                 hoseTypeSelect.innerHTML = '<option value="" disabled selected>Önce çapı seçin</option>';
+                currentRecommendedHoseId = null;
                 if (answers.hoseType) { answers.hoseType = ''; updateHosePreview(); }
                 return;
             }
@@ -909,26 +1011,35 @@
             const requiredPressure = answers.pressure !== '' ? Number(answers.pressure) : null;
             const matches = hydraulicHoseTypes
                 .map(h => ({ hose: h, entry: h.diameters.find(d => d.size === answers.diameter) }))
-                .filter(({ entry }) => entry && (requiredPressure === null || entry.cb >= requiredPressure));
+                .filter(({ entry }) => entry && (requiredPressure === null || entry.cb >= requiredPressure))
+                .sort((a, b) => a.entry.cb - b.entry.cb);
 
             if (matches.length === 0) {
                 hoseTypeSelect.innerHTML = requiredPressure === null
                     ? '<option value="" disabled selected>Bu çap için uygun hortum tipi yok</option>'
                     : '<option value="" disabled selected>Bu çap ve basınca uygun hortum tipi yok</option>';
+                currentRecommendedHoseId = null;
                 if (answers.hoseType) { answers.hoseType = ''; updateHosePreview(); }
                 return;
             }
 
-            const keepSelected = matches.some(({ hose }) => hose.id === answers.hoseType);
-            const options = ['<option value="" disabled' + (keepSelected ? '' : ' selected') + '>Seçiniz</option>']
-                .concat(matches.map(({ hose }) => `<option value="${hose.id}"${hose.id === answers.hoseType ? ' selected' : ''}>${hose.label}</option>`));
+            // Basınç girildiyse, yeterli olan en düşük (yani en yakın) hortum önerilir
+            // ve otomatik seçilir; kullanıcı dilerse listeden farklı bir tip seçebilir.
+            currentRecommendedHoseId = requiredPressure !== null ? matches[0].hose.id : null;
+            const selectedId = requiredPressure !== null ? currentRecommendedHoseId : answers.hoseType;
+            const stillValid = matches.some(({ hose }) => hose.id === selectedId);
+            const finalSelectedId = stillValid ? selectedId : '';
+
+            const options = ['<option value="" disabled' + (finalSelectedId ? '' : ' selected') + '>Seçiniz</option>']
+                .concat(matches.map(({ hose }) => {
+                    const isRecommended = hose.id === currentRecommendedHoseId;
+                    const label = isRecommended ? `${hose.label} (Önerilen)` : hose.label;
+                    return `<option value="${hose.id}"${hose.id === finalSelectedId ? ' selected' : ''}>${label}</option>`;
+                }));
             hoseTypeSelect.innerHTML = options.join('');
-            if (!keepSelected && answers.hoseType) {
-                answers.hoseType = '';
-                updateHosePreview();
-            } else if (keepSelected) {
-                updateHosePreview();
-            }
+
+            answers.hoseType = finalSelectedId;
+            updateHosePreview();
         }
 
         function updateNextState() {
@@ -986,7 +1097,10 @@
         highTempCheckbox.addEventListener('change', e => {
             answers.highTemp = e.target.checked;
             const hose = hydraulicHoseTypes.find(h => h.id === answers.hoseType);
-            hosePreviewCaption.textContent = hoseCaptionText(hose);
+            if (hose) {
+                hosePreviewCaption.textContent = hoseCaptionText(hose);
+                hosePreviewArt.innerHTML = hoseArtHtml(hose);
+            }
         });
         document.getElementById('length').addEventListener('input', e => {
             answers.length = e.target.value;
@@ -1040,10 +1154,46 @@
             updateNextState();
         });
 
+        const confirmOverlay = document.getElementById('confirmOverlay');
+        const confirmText = document.getElementById('confirmText');
+        const confirmProceedBtn = document.getElementById('confirmProceed');
+        const confirmCancelBtn = document.getElementById('confirmCancel');
+
+        function showConfirm(text, onConfirm) {
+            confirmText.textContent = text;
+            confirmOverlay.classList.add('visible');
+            function onProceed() { cleanup(); onConfirm(); }
+            function onCancel() { cleanup(); }
+            function cleanup() {
+                confirmOverlay.classList.remove('visible');
+                confirmProceedBtn.removeEventListener('click', onProceed);
+                confirmCancelBtn.removeEventListener('click', onCancel);
+            }
+            confirmProceedBtn.addEventListener('click', onProceed);
+            confirmCancelBtn.addEventListener('click', onCancel);
+        }
+
+        function goToNextStep() {
+            currentIndex++;
+            showStep(currentIndex);
+        }
+
         nextBtn.addEventListener('click', () => {
+            // Adım 2'de, önerilenden daha yüksek basınçlı bir hortum seçilmişse
+            // ilerlemeden önce kullanıcıya açıklayıp onay istiyoruz.
+            if (steps[currentIndex] === '2' && hoseTypeRequired() && answers.hoseType && currentRecommendedHoseId && answers.hoseType !== currentRecommendedHoseId) {
+                const selectedHose = hydraulicHoseTypes.find(h => h.id === answers.hoseType);
+                const entry = selectedHose ? selectedHose.diameters.find(d => d.size === answers.diameter) : null;
+                if (selectedHose && entry) {
+                    showConfirm(
+                        `Seçtiğiniz ${selectedHose.label} hortumu ${entry.cb} bar basınca kadar dayanıklı; siz ise ${answers.pressure} bar talep ettiniz. İhtiyacınızdan daha yüksek basınçlı (dolayısıyla gereksiz yere daha maliyetli olabilecek) bir hortum seçtiniz. Yine de bu hortumla devam etmek istiyor musunuz?`,
+                        goToNextStep
+                    );
+                    return;
+                }
+            }
             if (currentIndex < steps.length - 1) {
-                currentIndex++;
-                showStep(currentIndex);
+                goToNextStep();
             }
         });
         prevBtn.addEventListener('click', () => {
@@ -1082,6 +1232,7 @@
             bendAngleCustomInput.value = '';
             hoseTypeField.classList.add('hidden');
             hoseTypeSelect.innerHTML = '<option value="" disabled selected>Önce çapı seçin</option>';
+            currentRecommendedHoseId = null;
             highTempField.classList.add('hidden');
             highTempCheckbox.checked = false;
             highTempCheckbox.disabled = true;

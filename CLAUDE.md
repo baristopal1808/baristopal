@@ -12,25 +12,46 @@ devam ederiz.
 
 ## Son Konuşma Özeti (Devam Notu)
 
-**Tarih:** 2026-07-25
+**Tarih:** 2026-07-26
 
-Bu oturumda `hortum-sihirbazi.html` sıfırdan gerçek katalog verisiyle
-genişletildi (bkz. İlerleme Kaydı'ndaki ilgili madde) ve GitHub'a push
-edildi. Ardından kullanıcı, çoklu bilgisayarlı çalışma düzeninde Claude'un
-"hafızası" nasıl işliyor diye sordu. Netleşen durum:
+Uzun bir oturumda hem `index.html` hem `hortum-sihirbazi.html` üzerinde
+birçok görsel/işlevsel geliştirme yapıldı ve hepsi GitHub'a push edildi
+(bkz. İlerleme Kaydı'ndaki ilgili maddeler). Özet:
 
-- Cihazlar arası süreklilik bu dosya (CLAUDE.md) üzerinden sağlanıyor —
-  git ile senkronize, her oturumda otomatik okunuyor.
-- Claude'un kendi (`~/.claude/.../memory`) hafızası cihaza özel, senkronize
-  OLMUYOR — sadece bu bilgisayarda iş yaparken yardımcı, proje sürekliliği
-  için güvenilmemeli.
-- Kullanıcı sohbetin "en son ne konuşulduğunu" başka cihazda da görmek
-  istiyor → çözüm olarak bu "Son Konuşma Özeti" bölümü eklendi, her oturum
-  sonunda üzerine yazılacak (üstteki içerik silinip yenisiyle değiştirilir).
+- **index.html:** Hero'ya "FIBAR HİDROLİK" yazısının yanına gerçek bir
+  görsel eklendi (tam yükseklikte, `object-fit: cover` ile). "Birlikte
+  Çalıştığımız Firmalar" adında kayan (marquee) bir logo bandı eklendi —
+  ÖVS, Teksan Hidrolik Rakor, Nurol Makina, CAT (Borusan Cat), Junttan,
+  Hortum Market; hepsi kendi sitelerine link veriyor. Çalışmalarımız
+  bölümündeki 3 sabit placeholder kart kaldırıldı, yerine gerçek 6 fotoğraf
+  kondu (kategorize etme işi ileride yapılacak). Ürünlerimiz bölümü
+  Nipeller/Rakorlar/Soketler/Hortumlar olarak 4 kaleme indirildi, kısa
+  marka diline uygun açıklamalar yazıldı. Üst bilgi barı + ana menü artık
+  birlikte sticky (sayfa kaydırılınca sabit kalıyor). Sol üstte Instagram +
+  LinkedIn ikonu ve "Bizi Takip Edin" yazısı, sağ üstte TR/EN dil seçici
+  eklendi (yalnızca görsel/tıklanabilir; İngilizce çeviri kullanıcı isteğiyle
+  bilinçli olarak yapılmadı). Footer'a da Instagram/LinkedIn/YouTube SVG
+  ikonları eklendi.
+- **hortum-sihirbazi.html:** Hortum tipi seçimi artık akıllı — kullanıcı
+  basınç girince, o basıncı karşılayan en düşük (yani en yakın/en uygun)
+  hortum otomatik seçiliyor ve "(Önerilen)" etiketleniyor. Kullanıcı elle
+  daha yüksek basınçlı bir tip seçip "İleri"ye basarsa, ilerlemeden önce
+  açıklamalı bir "Emin misiniz?" onay modalı çıkıyor. Ayrıca sağ paneldeki
+  vektörel çizimlerin yerine gerçek hortum kesit fotoğrafları kondu (13/16
+  tip; R4 ve fren hatları için görsel henüz yok, vektörel yedek kullanılmaya
+  devam ediyor).
 
-**Sırada ne var:** Açık bir görev yok, kullanıcı onay bekliyor / yeni istek
-verebilir. `logo.jpg`/`.logo.jpg` ve `BARISTOPAL-CALISMALAR` dosyalarının
-akıbeti hâlâ netleşmedi (bkz. Dosyalar bölümü).
+**Bekleyen / netleşmemiş noktalar:**
+- Instagram, LinkedIn, YouTube linkleri hâlâ placeholder (`#`) — hesaplar
+  henüz açılmadı, kullanıcı ileride adresleri verecek.
+- `hortum-gorselleri/` klasöründe R4 (SAE J517 R4), fren-hidrolik
+  (SAE J1401) ve fren-hava (SAE J1402) için görsel eksik — kullanıcı bu
+  görselleri de ekleyecek (aynı isimlendirme mantığıyla `hortum görselleri`
+  klasörüne).
+- TR/EN dil seçici arayüzü var ama İngilizce içerik çevirisi yapılmadı
+  (kullanıcı özellikle "şimdilik çevirme" dedi).
+- `logo.jpg`/`.logo.jpg`, `BARISTOPAL-CALISMALAR` ve yeni beliren isimsiz
+  `.jpeg` dosyasının akıbeti hâlâ netleşmedi (bkz. Dosyalar bölümü).
 
 ## Proje Nedir
 
@@ -61,6 +82,21 @@ açılarak görüntülenebiliyor.
   isimli). Henüz hangisinin gereksiz olduğu netleştirilmedi.
 - `BARISTOPAL-CALISMALAR` — 0 byte, uzantısız, boş dosya. İşlevi belirsiz,
   muhtemelen yanlışlıkla oluşmuş.
+- `.jpeg` — isimsiz, 2026-07-26'da beliren bir başka dosya; muhtemelen
+  `fıbar hidrolik yazısı yanındaki görsel.jpeg` ile aynı kaynaktan yanlışlıkla
+  oluşmuş bir kopya. Henüz netleştirilmedi.
+- `sirketler/` — Anasayfadaki "Birlikte Çalıştığımız Firmalar" logo bandı
+  için kaynak görseller (ÖVS, Teksan, Nurol Makina, CAT, Junttan,
+  Hortum Market).
+- `calismalar/` — Anasayfadaki Çalışmalarımız bölümünde gösterilen 6 gerçek
+  fotoğraf (ASCII isimlendirilmiş; orijinalleri "fıbar calısmalar görseli/"
+  klasöründe duruyor).
+- `hero-gorsel.jpeg` — Hero bölümünde "FIBAR HİDROLİK" yazısının yanında
+  kullanılan görsel (orijinali "fıbar hidrolik yazısı yanındaki görsel.jpeg").
+- `hortum-gorselleri/` — Hortum sihirbazında sağ panelde gösterilen gerçek
+  hortum kesit fotoğrafları, ASCII isimlendirilmiş (orijinalleri
+  "hortum görselleri/" klasöründe duruyor). R4 ve fren hatları için henüz
+  görsel yok.
 
 ## Tasarım Sistemi (index.html ve hortum-sihirbazi.html ortak)
 
@@ -87,6 +123,16 @@ açılarak görüntülenebiliyor.
 
 ## İlerleme Kaydı
 
+- 2026-07-26: `index.html`'e hero görseli, kayan firma logosu bandı
+  (ÖVS/Teksan/Nurol Makina/CAT/Junttan/Hortum Market, hepsi linkli),
+  Çalışmalarımız için 6 gerçek fotoğraf, güncellenmiş Ürünlerimiz (Nipeller/
+  Rakorlar/Soketler/Hortumlar), sticky üst bar+menü, sol üstte Instagram/
+  LinkedIn + "Bizi Takip Edin", sağ üstte TR/EN dil seçici (görsel amaçlı,
+  çeviri yok) ve footer'da sosyal medya ikonları eklendi. `hortum-sihirbazi.
+  html`'de hortum tipi seçimi akıllandırıldı — basınca en yakın/yeterli tip
+  otomatik seçilip "(Önerilen)" etiketleniyor, kullanıcı daha yüksek basınçlı
+  bir tip seçip ilerlerse açıklamalı onay isteniyor; ayrıca vektörel hortum
+  çizimleri yerine 13 tip için gerçek kesit fotoğrafı kondu.
 - 2026-07-25: `hortum-sihirbazi.html` baştan sona genişletildi — "Hidrolik
   Yağ/Yakıt" kategorisine SEL/Votek kataloğundan (`hortumpdfler.pdf`,
   sayfa 3-5) 17 gerçek hortum tipi ve çap/basınç verisi eklendi, sihirbaz
