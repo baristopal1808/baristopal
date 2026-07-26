@@ -297,6 +297,14 @@ a { color: inherit; }
     .portal-mobile-toggle { display: flex; }
     .portal-content { padding: 20px; }
     .portal-topbar { padding: 16px 20px; }
+    /* Mobilde açma/kapama zaten hamburger menüyle yapılıyor; kalıcı
+       gizle/sabitle tuşu burada karışıklık yaratır, bu yüzden gizlenir. */
+    .portal-sidebar-toggle { display: none; }
+}
+
+@media (max-width: 480px) {
+    .portal-topbar h1 { font-size: 18px; }
+    .portal-topbar p { display: none; }
 }
 
 /* --- ORTAK BİLEŞENLER --- */

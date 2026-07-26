@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ürün Kataloğu | Fibar Hidrolik</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --text-main: #2A2A2A;
+            --accent-blue: #2B6CB0;
+            --bg-color: #f2f3f0;
+            --font-heading: 'Montserrat', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-body);
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            line-height: 1.6;
+        }
+        h1, h2, h3 { font-family: var(--font-heading); color: var(--text-main); }
+        section[id] { scroll-margin-top: 100px; }
+
+        .header {
+            background-color: #ffffff;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 500;
+        }
+        .logo { display: flex; align-items: center; text-decoration: none; }
+        .logo img { max-height: 46px; }
+        .back-link {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .back-link:hover { color: var(--accent-blue); }
+
+        .catalog-intro {
+            padding: 70px 5% 40px;
+            max-width: 760px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .catalog-intro h1 { font-size: 34px; margin-bottom: 14px; }
+        .catalog-intro p { color: #444; font-size: 16px; }
+
+        .category-nav {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 0 5% 50px;
+        }
+        .category-nav a {
+            padding: 10px 22px;
+            border-radius: 20px;
+            background-color: #ffffff;
+            border: 2px solid #e2e2e2;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: border-color 0.2s ease, color 0.2s ease;
+        }
+        .category-nav a:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .catalog-section {
+            padding: 60px 5%;
+        }
+        .catalog-section:nth-child(odd) { background-color: #ffffff; }
+        .section-header {
+            text-align: center;
+            max-width: 640px;
+            margin: 0 auto 40px;
+        }
+        .section-header h2 { font-size: 30px; margin-bottom: 12px; }
+        .section-header p { color: #555; font-size: 15px; }
+
+        .hose-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .hose-card {
+            background-color: var(--bg-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        .catalog-section:nth-child(odd) .hose-card { background-color: #f7f8f6; }
+        .hose-card-art {
+            height: 130px;
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+        .hose-card-art img,
+        .hose-card-art svg {
+            max-width: 100%;
+            max-height: 100%;
+            color: var(--accent-blue);
+        }
+        .hose-card-body {
+            padding: 18px 20px 22px;
+        }
+        .hose-card-body h3 {
+            font-size: 17px;
+            margin-bottom: 10px;
+        }
+        .hose-spec {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13.5px;
+            color: #555;
+            padding: 5px 0;
+            border-top: 1px solid rgba(0,0,0,0.06);
+        }
+        .hose-spec:first-of-type { border-top: none; }
+        .hose-spec strong { color: var(--text-main); font-weight: 600; }
+        .temp-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background-color: rgba(226,160,40,0.15);
+            color: #91630f;
+            font-size: 11.5px;
+            font-weight: 700;
+        }
+
+        .fitting-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 22px;
+            max-width: 1100px;
+            margin: 0 auto 30px;
+        }
+        .fitting-card {
+            background-color: var(--bg-color);
+            border-radius: 10px;
+            padding: 26px 22px;
+            border-left: 5px solid var(--accent-blue);
+        }
+        .catalog-section:nth-child(odd) .fitting-card { background-color: #f7f8f6; }
+        .fitting-card h3 { font-size: 18px; margin-bottom: 8px; }
+        .fitting-card p { font-size: 14px; color: #555; }
+        .fitting-note {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .catalog-cta {
+            padding: 70px 5%;
+            text-align: center;
+        }
+        .catalog-cta h2 { font-size: 26px; margin-bottom: 14px; }
+        .catalog-cta p { color: #555; margin-bottom: 26px; }
+        .cta-actions { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .btn-solid, .btn-outline {
+            display: inline-block;
+            padding: 12px 26px;
+            border-radius: 5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .btn-solid { background-color: var(--accent-blue); color: #fff; }
+        .btn-solid:hover { background-color: #21548a; }
+        .btn-outline { border: 2px solid var(--text-main); color: var(--text-main); }
+        .btn-outline:hover { background-color: var(--text-main); color: #fff; }
+
+        @media (max-width: 600px) {
+            .catalog-intro h1 { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="index.html" class="logo">
+            <img src="logo.jpg" alt="Fibar Hidrolik Logo">
+        </a>
+        <a href="index.html" class="back-link">&larr; Anasayfaya Dön</a>
+    </header>
+
+    <div class="catalog-intro">
+        <h1>Ürün Kataloğu</h1>
+        <p>Hidrolik hortum, nipel, rakor ve soket çeşitlerimize genel bir bakış. Fiyat
+           bilgisi için "Doğru Hortumu Bul" sihirbazını kullanabilir veya bizimle
+           iletişime geçebilirsiniz.</p>
+    </div>
+
+    <div class="category-nav">
+        <a href="#hortum">Hortum</a>
+        <a href="#nipel">Nipel</a>
+        <a href="#rakor">Rakor</a>
+        <a href="#soket">Soket</a>
+    </div>
+
+    <!-- Hortum -->
+    <section class="catalog-section" id="hortum">
+        <div class="section-header">
+            <h2>Hidrolik Hortumlar</h2>
+            <p>SAE ve DIN-EN standartlarında, farklı basınç sınıflarında geniş hortum yelpazesi.</p>
+        </div>
+        <div class="hose-grid" id="hoseGrid"></div>
+    </section>
+
+    <!-- Nipel -->
+    <section class="catalog-section" id="nipel">
+        <div class="section-header">
+            <h2>Nipeller</h2>
+            <p>Farklı başlık standartlarında, ihtiyacınıza özel üretim veya temin edilen nipel çeşitleri.</p>
+        </div>
+        <div class="fitting-grid" id="nipelGrid"></div>
+        <p class="fitting-note">Ölçü ve başlık tipine göre özel nipel üretimi/temini yapılmaktadır; talebiniz için bize ulaşın.</p>
+    </section>
+
+    <!-- Rakor -->
+    <section class="catalog-section" id="rakor">
+        <div class="section-header">
+            <h2>Rakorlar</h2>
+            <p>Düz, 45° ve 90° açılı seçenekleriyle her sisteme uygun rakor çeşitleri.</p>
+        </div>
+        <div class="fitting-grid" id="rakorGrid"></div>
+        <p class="fitting-note">Standart dışı ölçü ve açı talepleri için de üretim desteği sağlanmaktadır.</p>
+    </section>
+
+    <!-- Soket -->
+    <section class="catalog-section" id="soket">
+        <div class="section-header">
+            <h2>Soketler</h2>
+            <p>Hortum başlıklarıyla tam uyumlu, basınca dayanıklı soket çeşitleri.</p>
+        </div>
+        <div class="fitting-grid" id="soketGrid"></div>
+        <p class="fitting-note">Her hortum tipi ve çapı için uygun soket eşleştirmesi tarafımızca yapılır.</p>
+    </section>
+
+    <div class="catalog-cta">
+        <h2>Aradığınız ölçüyü mü bulamadınız?</h2>
+        <p>4 adımlık sihirbazımızla size en uygun hortum, başlık ve soket kombinasyonunu birlikte belirleyelim.</p>
+        <div class="cta-actions">
+            <a href="hortum-sihirbazi.html" class="btn-solid">Doğru Hortumu Bul</a>
+            <a href="index.html#iletisim" class="btn-outline">Bize Ulaşın</a>
+        </div>
+    </div>
+
+    <script>
+        // Hortum tipi verisi hortum-sihirbazi.html ile aynı kaynaktan (SEL/Votek
+        // kataloğu, hortumpdfler.pdf sayfa 3-5); fiyat/maliyet burada gösterilmez.
+        const hydraulicHoseTypes = [
+            { id: 'r1-1sn', label: 'SAE 100 R1 AT', standard: 'Tek Örgülü, DIN-EN 853 1SN', hasHighTemp: true, diameters: [
+                {size:'3/16"',cb:250},{size:'1/4"',cb:225},{size:'5/16"',cb:215},{size:'3/8"',cb:180},{size:'1/2"',cb:160},{size:'5/8"',cb:130},{size:'3/4"',cb:105},{size:'1"',cb:88},{size:'1.1/4"',cb:63},{size:'1.1/2"',cb:50},{size:'2"',cb:40},{size:'2.1/2"',cb:40},{size:'3"',cb:35}
+            ] },
+            { id: 'r2at-2sn', label: 'SAE 100 R2 AT', standard: 'Çift Örgülü, DIN-EN 853 2SN', hasHighTemp: true, diameters: [
+                {size:'3/16"',cb:415},{size:'1/4"',cb:400},{size:'5/16"',cb:350},{size:'3/8"',cb:330},{size:'1/2"',cb:275},{size:'5/8"',cb:250},{size:'3/4"',cb:215},{size:'1"',cb:165},{size:'1.1/4"',cb:125},{size:'1.1/2"',cb:90},{size:'2"',cb:78},{size:'2.1/2"',cb:69},{size:'3"',cb:50}
+            ] },
+            { id: '1sc', label: 'DIN-EN 857 1SC', standard: 'Kompakt, Tek Örgülü', diameters: [
+                {size:'1/4"',cb:225},{size:'5/16"',cb:215},{size:'3/8"',cb:180},{size:'1/2"',cb:160},{size:'5/8"',cb:130},{size:'3/4"',cb:105},{size:'1"',cb:88}
+            ] },
+            { id: '2sc', label: 'DIN-EN 857 2SC', standard: 'Kompakt, Çift Örgülü', diameters: [
+                {size:'1/4"',cb:400},{size:'5/16"',cb:350},{size:'3/8"',cb:330},{size:'1/2"',cb:275},{size:'5/8"',cb:250},{size:'3/4"',cb:215},{size:'1"',cb:165}
+            ] },
+            { id: '1sc-ikiz', label: '1SC İkiz', standard: 'İkiz Hat, Tek Örgülü', diameters: [
+                {size:'1/4"x1/4"',cb:225},{size:'5/16"x5/16"',cb:215},{size:'3/8"x3/8"',cb:180},{size:'1/2"x1/2"',cb:160}
+            ] },
+            { id: '2sc-ikiz', label: '2SC İkiz', standard: 'İkiz Hat, Çift Örgülü', diameters: [
+                {size:'1/4"x1/4"',cb:400},{size:'5/16"x5/16"',cb:350},{size:'3/8"x3/8"',cb:330},{size:'1/2"x1/2"',cb:275}
+            ] },
+            { id: '4sp', label: 'TS EN 856 4SP', standard: 'Spiral, 4 Kat', diameters: [
+                {size:'1/4"',cb:450},{size:'3/8"',cb:445},{size:'1/2"',cb:415},{size:'5/8"',cb:350},{size:'3/4"',cb:350},{size:'1"',cb:280}
+            ] },
+            { id: '4sh', label: 'TS EN 856 4SH', standard: 'Spiral, Ağır Hizmet', diameters: [
+                {size:'3/4"',cb:420},{size:'1"',cb:380},{size:'1.1/4"',cb:350},{size:'1.1/2"',cb:290},{size:'2"',cb:250}
+            ] },
+            { id: '2sc-compact', label: '2SC Compact', standard: 'Kompakt, Esnek Yapı', diameters: [
+                {size:'1/4"',cb:450},{size:'5/16"',cb:420},{size:'3/8"',cb:385},{size:'1/2"',cb:345},{size:'5/8"',cb:290},{size:'3/4"',cb:280},{size:'1"',cb:200}
+            ] },
+            { id: 'x5000', label: 'X-5000+', standard: 'Ekstra Esnek', diameters: [
+                {size:'3/8"',cb:350},{size:'1/2"',cb:350},{size:'5/8"',cb:350},{size:'3/4"',cb:350},{size:'1"',cb:350},{size:'1.1/4"',cb:350}
+            ] },
+            { id: 'x6000', label: 'X-6000+', standard: 'Ekstra Esnek, Yüksek Basınç', diameters: [
+                {size:'3/8"',cb:420},{size:'1/2"',cb:420},{size:'5/8"',cb:420},{size:'3/4"',cb:420},{size:'1"',cb:420},{size:'1.1/4"',cb:420}
+            ] },
+            { id: 'r5', label: 'SAE J517 R5', standard: 'Tekstil Örgülü, Metal Kaplı', diameters: [
+                {size:'3/16"',cb:210},{size:'1/4"',cb:210},{size:'5/16"',cb:157},{size:'13/32"',cb:140},{size:'1/2"',cb:122},{size:'5/8"',cb:105},{size:'7/8"',cb:56},{size:'1.1/8"',cb:43},{size:'1.3/8"',cb:35},{size:'1.13/16"',cb:24},{size:'2.3/8"',cb:24}
+            ] },
+            { id: 'r6', label: 'SAE 100 R6', standard: 'Tek Tekstil Örgülü', diameters: [
+                {size:'3/16"',cb:34},{size:'1/4"',cb:28},{size:'5/16"',cb:28},{size:'3/8"',cb:28},{size:'1/2"',cb:28},{size:'5/8"',cb:24},{size:'3/4"',cb:21},{size:'1"',cb:20}
+            ] },
+            { id: 'r3', label: 'SAE 100 R3', standard: 'Çift Tekstil Örgülü', diameters: [
+                {size:'3/16"',cb:103},{size:'1/4"',cb:86},{size:'5/16"',cb:83},{size:'3/8"',cb:78},{size:'1/2"',cb:69},{size:'5/8"',cb:60},{size:'3/4"',cb:52},{size:'1"',cb:39},{size:'1.1/4"',cb:26},{size:'1.1/2"',cb:20}
+            ] },
+            { id: 'r4x', label: 'SAE J517 R4', standard: 'Geniş Çaplı, Emme/Basma Hattı', diameters: [
+                {size:'3/4"',cb:21},{size:'1"',cb:17},{size:'1.1/4"',cb:14},{size:'1.1/2"',cb:10},{size:'2"',cb:7},{size:'2.1/2"',cb:4},{size:'3"',cb:4},{size:'3.1/2"',cb:3},{size:'4"',cb:2}
+            ] },
+            { id: 'fren-hidrolik', label: 'SAE J1401', standard: 'Hidrolik Fren Hattı', diameters: [
+                {size:'1/8"',cb:276},{size:'3/16"',cb:276}
+            ] },
+            { id: 'fren-hava', label: 'SAE J1402', standard: 'Hava Fren Hattı', diameters: [
+                {size:'3/8"',cb:20.7},{size:'1/2"',cb:20.7},{size:'5/8"',cb:20.7}
+            ] }
+        ];
+
+        const hoseImages = {
+            'r1-1sn': 'hortum-gorselleri/r1-normal.png',
+            'r2at-2sn': 'hortum-gorselleri/r2-normal.png',
+            '1sc': 'hortum-gorselleri/1sc.png',
+            '2sc': 'hortum-gorselleri/2sc.png',
+            '1sc-ikiz': 'hortum-gorselleri/ikiz-1sc.png',
+            '2sc-ikiz': 'hortum-gorselleri/ikiz-2sc.png',
+            '4sp': 'hortum-gorselleri/4sp.png',
+            '4sh': 'hortum-gorselleri/4sh.png',
+            '2sc-compact': 'hortum-gorselleri/2sc-compact.png',
+            'x5000': 'hortum-gorselleri/x5000.png',
+            'x6000': 'hortum-gorselleri/x6000.png',
+            'r5': 'hortum-gorselleri/r5.png',
+            'r6': 'hortum-gorselleri/r6.png',
+            'r3': 'hortum-gorselleri/r3.png'
+        };
+        const fallbackArt = '<svg viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="26" width="20" height="28" rx="4"/><rect x="138" y="26" width="20" height="28" rx="4"/><rect x="20" y="22" width="120" height="36" rx="18"/></svg>';
+
+        function diameterRangeText(diameters) {
+            return `${diameters[0].size} – ${diameters[diameters.length - 1].size}`;
+        }
+        function pressureRangeText(diameters) {
+            const values = diameters.map(d => d.cb);
+            const min = Math.min(...values), max = Math.max(...values);
+            return min === max ? `${max} bar` : `${min} – ${max} bar`;
+        }
+
+        document.getElementById('hoseGrid').innerHTML = hydraulicHoseTypes.map(hose => `
+            <div class="hose-card">
+                <div class="hose-card-art">
+                    ${hoseImages[hose.id] ? `<img src="${hoseImages[hose.id]}" alt="${hose.label}">` : fallbackArt}
+                </div>
+                <div class="hose-card-body">
+                    <h3>${hose.label}</h3>
+                    <div class="hose-spec"><span>Yapı</span><strong>${hose.standard}</strong></div>
+                    <div class="hose-spec"><span>Çap Aralığı</span><strong>${diameterRangeText(hose.diameters)}</strong></div>
+                    <div class="hose-spec"><span>Maks. Basınç</span><strong>${pressureRangeText(hose.diameters)}</strong></div>
+                    ${hose.hasHighTemp ? '<span class="temp-badge">135°C Dayanıklı Seçenek Mevcut</span>' : ''}
+                </div>
+            </div>
+        `).join('');
+
+        const headTypes = [
+            { label: 'BSP', desc: 'Britanya standardı boru dişi; Avrupa menşeli ekipmanlarda yaygın.' },
+            { label: 'METRİK', desc: 'Metrik ölçülü, O-ring contalı bağlantı standardı.' },
+            { label: 'NPT', desc: 'Amerikan konik boru dişi; genellikle ABD menşeli ekipmanlarda kullanılır.' },
+            { label: 'UNF', desc: 'İnce dişli, O-ring contalı Amerikan bağlantı standardı.' },
+            { label: 'JIC', desc: '37° konik yüzeyli, yüksek basınca uygun Amerikan standardı.' }
+        ];
+
+        ['nipelGrid', 'rakorGrid', 'soketGrid'].forEach(gridId => {
+            document.getElementById(gridId).innerHTML = headTypes.map(h => `
+                <div class="fitting-card">
+                    <h3>${h.label}</h3>
+                    <p>${h.desc}</p>
+                </div>
+            `).join('');
+        });
+    </script>
+</body>
+</html>
