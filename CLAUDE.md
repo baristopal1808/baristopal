@@ -12,6 +12,36 @@ devam ederiz.
 
 ## Son Konuşma Özeti (Devam Notu)
 
+**Tarih:** 2026-08-01
+
+Kullanıcı yeni bir "portal" daha istedi: şirket yetkililerinin telefonunda
+kullanacağı bir mobil uygulama. Sorularla netleşti: bu bir web sitesi/PWA
+DEĞİL, gerçek bir **native mobil uygulama** olacak (React Native/Expo,
+hem iOS hem Android). Giriş için "mevcut portalla aynı olsun" dendi ama
+native uygulama web sitesinin `localStorage`'ına erişemediğinden bu
+teknik olarak mümkün değil — v1'de hiç giriş ekranı yok, bu bilinçli
+bir açık nokta (bkz. aşağıdaki yeni bölüm).
+
+İlk araç olarak "Hortum Basım Ölçüsü Hesapla" sihirbazının tam akışı
+kullanıcı tarafından adım adım anlatıldı ve mimari plan (Expo + React
+Navigation + AsyncStorage + react-native-svg + Montserrat/Inter fontları)
+onaylandı. Ancak bu bilgisayarda **Node.js kurulu değil**, bu yüzden
+gerçek Expo projesi henüz oluşturulamadı. Bunun yerine, onay/inceleme
+amacıyla tamamen self-contained (fontlar dahil gömülü, harici hiçbir
+isteği olmayan), site ile birebir aynı tasarım dilini kullanan tıklanabilir
+bir **HTML önizlemesi** yapıldı: `hortum-basim-onizleme/index.html`.
+Kullanıcı bunu yerel bir sunucu (PowerShell `HttpListener`, port 8765)
+üzerinden Chrome'da açıp inceledi ve onayladı ("kontrol ettim teşekkür
+ederim").
+
+**Sırada ne var:** Bu bilgisayara (veya başka bir cihaza) Node.js
+kurulduğunda, onaylanan bu tasarımı esas alan gerçek native uygulama
+`hortum-basim-uygulamasi/` klasöründe Expo ile inşa edilecek (plan detayı
+aşağıdaki yeni bölümde). Kullanıcı bu oturumdaki tüm çalışmayı GitHub'a
+kaydetmemi istedi.
+
+---
+
 **Tarih:** 2026-07-26
 
 Personel Portalı (önceki oturumda başlatılmıştı) bu oturumda çok büyüdü
@@ -78,10 +108,14 @@ birçok görsel/işlevsel geliştirme yapıldı ve hepsi GitHub'a push edildi
 
 Fibar Hidrolik adlı firma için statik (framework'süz) kurumsal tanıtım
 sitesi. Sade HTML/CSS/JS, build adımı yok, dosyalar doğrudan tarayıcıda
-açılarak görüntülenebiliyor. İki alt bölümden oluşuyor:
+açılarak görüntülenebiliyor. Üç alt bölümden oluşuyor:
 1. **Kurumsal site** (`index.html`, `hortum-sihirbazi.html`) — herkese açık.
 2. **Personel Portalı** (`portal-giris.html` + `portal/` klasörü) — giriş
    gerektiren iç kullanım prototipi (bkz. aşağıdaki ilgili bölüm).
+3. **Hortum Basım Ölçüsü Mobil Uygulaması** (planlanan, henüz inşa
+   edilmedi) — şirket yetkilileri için native mobil uygulama; şu an
+   sadece onaylanmış bir HTML önizlemesi var (bkz. aşağıdaki ilgili
+   bölüm).
 
 ## Personel Portalı
 
@@ -167,6 +201,55 @@ footer'ına küçük bir "Personel Girişi" linki eklendi (`index.html` →
   - `ayarlar.html` (admin'e özel) — giriş kullanıcı adı/şifresini
     değiştirme.
 
+## Hortum Basım Ölçüsü Mobil Uygulaması (Planlanan)
+
+Şirket yetkilileri için telefonda kullanılacak, kurumsal siteden ve
+Personel Portalı'ndan tamamen bağımsız **gerçek bir native mobil
+uygulama** (React Native/Expo, hem iOS hem Android). Henüz inşa
+edilmedi — bu bilgisayarda Node.js kurulu olmadığı için proje
+oluşturulamadı. Şu an sadece onaylanmış bir HTML önizlemesi var.
+
+- **Durum:** `hortum-basim-onizleme/index.html` — tıklanabilir, tek
+  dosyalık statik HTML önizleme (Montserrat/Inter fontları gerçek
+  dosya olarak gömülü, site ile birebir aynı renkler: `#2A2A2A` metin,
+  `#2B6CB0` accent-mavi, koyu/açık tema desteği). SADECE tasarım/akış
+  onayı içindir, gerçek uygulama DEĞİLDİR — marka ekle/sil kısmı
+  gerçekten `localStorage`'a yazıyor (tarayıcıda kalıcı), geri kalan
+  her şey (hesaplama, ekran geçişleri) JS ile simüle edilmiş durumda.
+  Kullanıcı bu önizlemeyi inceleyip onayladı.
+- **Sırada ne var:** Node.js kurulduğunda, bu önizlemedeki tasarım
+  esas alınarak gerçek uygulama `hortum-basim-uygulamasi/` klasöründe
+  Expo ile kurulacak: `@react-navigation/native` + `native-stack`,
+  `@react-native-async-storage/async-storage` (marka listesi için),
+  `react-native-svg` (soket görselleri), `@expo-google-fonts/*`
+  (Montserrat/Inter).
+- **Giriş ekranı v1'de YOK** — kullanıcı "mevcut portalla aynı olsun"
+  dedi ama native uygulama web sitesinin `localStorage`'ına erişemez
+  (ayrı çalışma zamanı), yani birebir paylaşım teknik olarak mümkün
+  değil. Kendi bağımsız giriş mekanizması istenirse ayrı bir iş olarak
+  ele alınmalı.
+- **v1 kapsamı — "Hortum Basım Ölçüsü Hesapla" sihirbazı:**
+  1. **Marka Seç** — SEL, DUNLOP, MANULİ, GATES, ALFAGOMMA (admin
+     ileride ekleyip silebilir; önizlemede bu kısım gerçekten çalışır).
+  2. **Rakor Tipi Seç** — INTERLOCK veya SIYIRMALI; seçilince altta
+     otomatik "INTERLOCK SOKET" / "SIYIRMALI SOKET" etiketi ve
+     kademeli (interlock) veya düz/tırtıksız (sıyırmalı) vektörel
+     soket görseli beliriyor.
+  3. **Ölçüleri Gir** — Soyulmuş Hortum Dış Çapı + Soket İç Çapı (mm).
+     "Hesapla": `fark = soketİçÇapı − hortumDışÇapı`; etek payı
+     SIYIRMALI'da +0,5mm, INTERLOCK'ta +0,3mm; `basımÖlçüsü = fark +
+     etekPayı`. Ardından "Hortumu BAS".
+  4. **Mastar sorusu** — "Rakor içerisinden mastar ile ölçtün mü?"
+     Hayır'da uyarı gösterip ilerletmiyor; Evet ile devam ediyor.
+  5. **Basım sonucu** — "Basım başarılı mı?" Evet → tebrik mesajı
+     ("TEBRİKLER! Mükemmel basımlara devam etmenizi dilerim.").
+     Hayır → "BASIM BAŞARISIZ, bu ürün hurdaya ayrılmalıdır." İkisi de
+     "Yeni Basıma Başla" ile ana sayfaya dönüyor.
+- **Gelecekte planlanan (henüz spesifiye edilmedi):** İkinci bir araç
+  — bazı hortumlar için sabit/hazır basım ölçülerinin listelendiği
+  hızlı bakış ekranı. Ana Sayfa'da "Yakında" etiketli bir kart olarak
+  önizlemede yer tutucu şeklinde duruyor.
+
 ## Dosyalar
 
 - `index.html` — Ana kurumsal site. Tek sayfa, bölümler: Hero, Uzmanlık
@@ -207,6 +290,10 @@ footer'ına küçük bir "Personel Girişi" linki eklendi (`index.html` →
   görsel yok.
 - `portal-giris.html` ve `portal/` — Personel Portalı (bkz. yukarıdaki
   "Personel Portalı" bölümü).
+- `hortum-basim-onizleme/index.html` — Planlanan mobil uygulamanın
+  onay için hazırlanmış tek dosyalık HTML önizlemesi (bkz. yukarıdaki
+  "Hortum Basım Ölçüsü Mobil Uygulaması" bölümü). Gerçek uygulama
+  değil, sadece tasarım/akış onayı içindir.
 
 ## Tasarım Sistemi (index.html ve hortum-sihirbazi.html ortak)
 
@@ -233,6 +320,14 @@ footer'ına küçük bir "Personel Girişi" linki eklendi (`index.html` →
 
 ## İlerleme Kaydı
 
+- 2026-08-01: Yeni bir mobil uygulama fikri planlandı — şirket
+  yetkilileri için native (React Native/Expo) bir uygulama, ilk aracı
+  "Hortum Basım Ölçüsü Hesapla" sihirbazı (marka → rakor tipi → ölçü
+  girişi/hesaplama → mastar onayı → basım sonucu). Bu bilgisayarda
+  Node.js kurulu olmadığından gerçek uygulama henüz kurulamadı; onun
+  yerine tasarım onayı için `hortum-basim-onizleme/index.html`
+  önizlemesi oluşturuldu ve push edildi (bkz. "Hortum Basım Ölçüsü
+  Mobil Uygulaması" bölümü).
 - 2026-07-26: Personel Portalı büyük ölçüde genişletildi ve push edildi:
   admin/admin artık Ayarlar'dan değiştirilebiliyor; "aktif firma" kavramı
   kaldırıldı; anasayfa sol menüsüz sade kutucuk ızgarasına dönüştü;
