@@ -12,6 +12,65 @@ devam ederiz.
 
 ## Son Konuşma Özeti (Devam Notu)
 
+**Tarih:** 2026-08-11
+
+Kullanıcı bu bilgisayara Node.js indirdi (`Desktop/node-v24.19.0-win-x64`,
+portable/zip, PATH'e eklenmedi) ve "UI UX Pro Max" adlı bir Claude Code
+eklentisini kurmak istedi. Araştırma sonucu bunun bir VS Code eklentisi
+değil, tasarım veritabanı sunan bir Claude Code skill/plugin'i olduğu
+netleşti (`nextlevelbuilder/ui-ux-pro-max-skill`) — indirilen portable
+Node.js ile `npm install -g ui-ux-pro-max-cli` + `uipro init --ai claude`
+komutlarıyla kuruldu, `.claude/skills/ui-ux-pro-max/` (ve yan skiller:
+brand, design, design-system, banner-design, slides, ui-styling) projeye
+eklendi.
+
+Bu eklentinin renk/font veritabanından yararlanılarak site genelinde bir
+tasarım yenileme oturumu yapıldı. Kullanıcı **önceki hiçbir dosyayı
+kaybetmemek için** tüm değişikliklerin ayrı bir önizleme klasöründe
+yapılmasını istedi: `tasarim-guncelleme-onizleme/` — kök dizindeki
+`index.html`, `katalog.html`, `hortum-sihirbazi.html`, `portal-giris.html`
+ve `portal/` klasörünün tamamının kopyaları + gerekli asset'ler (icons,
+logo.jpg, hero-gorsel, calismalar, sirketler, hortum-gorselleri, manifest
+dosyaları) burada duruyor. **Orijinal kök dosyalara hiç dokunulmadı.**
+
+Yapılan değişiklikler (şu an sadece önizleme klasöründe):
+- **Font:** Montserrat/Inter → **Lexend (başlık) + Source Sans 3 (gövde)**
+  tüm sitede (index, katalog, hortum-sihirbazi, portal.css dahil — portal
+  ekranlarının hepsinde font linki güncellendi).
+- **Renk tutarlılığı:** Koddaki sürüklenme giderildi (`hortum-sihirbazi.html`
+  ve `portal-giris.html` hâlâ eski haki `#C8CBB4` zemin kullanıyordu,
+  `index.html`'de accent-blue `#1966b7` idi) — hepsi tek bir sisteme
+  toplandı.
+- **index.html hero bölümü baştan tasarlandı** — kullanıcının paylaştığı
+  iki referans görsele (OBSIDIAN mimarlık stüdyosu, Cascade & Coal steakhouse
+  sitesi) dayanarak: görsel tam genişlikte arka planda + koyu gradyan +
+  metin önde bindirilmiş, "FIBAR HİDROLİK" başlığı için kalın geometrik
+  **Space Grotesk** (kullanıcı bilinçli olarak ince serif yerine bunu
+  seçti — endüstriyel/mühendislik güven algısını korumak için), ince
+  çizgili "eyebrow" etiket, italik slogan, ok işaretli buton + sade metin
+  linki, hero yüksekliği yaklaşık tam ekran (`calc(100vh - header)`).
+- **Tüm site koyu temaya çevrildi** (kullanıcı isteği: "#2A2A2A zemin,
+  kırık beyaz yazı") — `index.html`, `katalog.html`, `hortum-sihirbazi.html`
+  uçtan uca dönüştürüldü: `--bg-color:#2A2A2A`, `--text-main:#EDEDE8`,
+  `--accent-blue:#4d8fd6` (dark-bg için parlatıldı), yeni `--surface-bg`/
+  `--border-color` token'ları eklendi, tüm kart/form/footer/header
+  bileşenleri koyu zemine göre yeniden ayarlandı. Beyaz zemin gerektiren
+  yerler (logo.jpg, partner logoları, hortum kesit fotoğrafları — hepsi
+  JPEG/PNG olarak beyaz arka planla "gömülü") bilinçli olarak beyaz
+  "chip" kutularıyla çerçevelendi ki görsel bozulmasın. **Personel
+  Portalı bu kapsamın DIŞINDA tutuldu** — zaten kendi ayrı açık/koyu
+  tema anahtarı var.
+- `FIBAR_Fiyat_Teklif_Formu.pdf` adlı dağınık bir dosya repoya eklenmedi
+  (kullanıcı onayıyla) — repo public olduğu için fiyat/teklif içeriği
+  içerebilecek bir dosyayı bilerek dışarıda bıraktık.
+
+**Sırada ne var:** Kullanıcı `tasarim-guncelleme-onizleme/` klasörünü
+(başta `index.html`) tarayıcıda inceleyip onaylayacak. Onaylanırsa bu
+değişiklikler kök dosyalara (index.html, katalog.html,
+hortum-sihirbazi.html, portal/) uygulanıp önizleme klasörü kaldırılacak.
+
+---
+
 **Tarih:** 2026-08-01
 
 Kullanıcı yeni bir "portal" daha istedi: şirket yetkililerinin telefonunda
@@ -320,6 +379,19 @@ oluşturulamadı. Şu an sadece onaylanmış bir HTML önizlemesi var.
 
 ## İlerleme Kaydı
 
+- 2026-08-11: "UI UX Pro Max" Claude Code skill'i kuruldu
+  (`.claude/skills/ui-ux-pro-max/` ve yan skiller). Bu eklentiden
+  yararlanılarak `tasarim-guncelleme-onizleme/` adlı ayrı bir önizleme
+  klasöründe (kök dosyalara dokunmadan) site geneli bir tasarım
+  yenilemesi yapıldı ve push edildi: font Montserrat/Inter →
+  Lexend + Source Sans 3, index/katalog/hortum-sihirbazi arasındaki
+  renk tutarsızlıkları giderildi, index.html hero bölümü kullanıcının
+  paylaştığı referanslara (OBSIDIAN, Cascade & Coal) göre yeniden
+  tasarlandı (tam genişlik arka plan görsel + Space Grotesk başlık +
+  eyebrow etiket + italik slogan), ve son olarak kullanıcı isteğiyle
+  üç sayfa da (index, katalog, hortum-sihirbazi) uçtan uca koyu temaya
+  (#2A2A2A zemin, kırık beyaz metin) çevrildi. Personel Portalı bu
+  kapsamın dışında tutuldu. Onay bekleniyor (bkz. "Son Konuşma Özeti").
 - 2026-08-01: Yeni bir mobil uygulama fikri planlandı — şirket
   yetkilileri için native (React Native/Expo) bir uygulama, ilk aracı
   "Hortum Basım Ölçüsü Hesapla" sihirbazı (marka → rakor tipi → ölçü
