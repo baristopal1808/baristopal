@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fibar Hidrolik | Kurumsal</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2B6CB0">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fibar Hidrolik">
+
+    <!-- Google Fonts: Montserrat ve Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- TASARIM SİSTEMİ (Renkler ve Fontlar) --- */
+        :root {
+            --text-main: #2A2A2A;
+            --accent-blue: #1966b7;
+            --bg-color: #f2f3f0;
+            --font-heading: 'Montserrat', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: var(--font-body);
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            color: var(--text-main);
+        }
+        section[id] {
+            scroll-margin-top: 150px;
+        }
+
+        /* --- AÇILIŞ EKRANI (Preloader Animasyonu) --- */
+        .preloader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            z-index: 9999;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .preloader-bg-top, .preloader-bg-bottom {
+            position: absolute;
+            left: 0; width: 100%; height: 50vh;
+            background-color: var(--text-main);
+            z-index: 9998;
+            /* 1 saniye bekler, 0.6 saniyede açılır */
+            animation: split-up 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1s forwards;
+        }
+        .preloader-bg-top { top: 0; }
+        .preloader-bg-bottom { bottom: 0; animation-name: split-down; }
+
+        .preloader-logo {
+            position: relative;
+            z-index: 9999;
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 20px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            /* 0.8 saniye sonra logo kaybolmaya başlar */
+            animation: fade-out 0.4s ease 0.8s forwards;
+        }
+        .preloader-logo img {
+            max-height: 100px; /* Açılıştaki büyük logonun boyutu */
+            width: auto;
+            display: block;
+        }
+
+        @keyframes split-up {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-100%); }
+        }
+        @keyframes split-down {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100%); }
+        }
+        @keyframes fade-out {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.8); visibility: hidden; }
+        }
+
+        /* --- SABİT ÜST GRUP (Bilgi Barı + Menü) --- */
+        .site-header-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 500;
+        }
+
+        /* --- ÜST BİLGİ BARI --- */
+        .top-bar {
+            background-color: var(--text-main);
+            color: #ffffff;
+            font-size: 14px;
+            padding: 8px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+        }
+        .top-bar a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .top-bar a:hover {
+            color: var(--accent-blue);
+        }
+        .top-bar-social {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .top-bar-social a {
+            display: flex;
+            align-items: center;
+        }
+        .top-bar-social svg {
+            width: 15px;
+            height: 15px;
+            fill: #ffffff;
+            transition: fill 0.3s ease;
+        }
+        .top-bar-social a:hover svg {
+            fill: var(--accent-blue);
+        }
+        .top-bar-follow-text {
+            font-size: 13px;
+        }
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .lang-switch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-left: 16px;
+            border-left: 1px solid rgba(255,255,255,0.3);
+        }
+        .lang-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: var(--font-body);
+            cursor: pointer;
+            opacity: 0.55;
+            padding: 2px 3px;
+            transition: opacity 0.3s ease;
+        }
+        .lang-btn.active {
+            opacity: 1;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .lang-btn:hover {
+            opacity: 1;
+        }
+
+        /* --- ANA MENÜ --- */
+        .header {
+            background-color: #ffffff;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        .logo img {
+            max-height: 50px; /* Menüdeki küçük logonun boyutu */
+            width: auto;
+        }
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover {
+            color: var(--accent-blue);
+        }
+        .btn-wizard {
+            background-color: var(--accent-blue);
+            color: #ffffff !important;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn-wizard:hover {
+            background-color: #21548a;
+        }
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .menu-toggle span {
+            width: 26px;
+            height: 3px;
+            background-color: var(--text-main);
+            border-radius: 2px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .menu-toggle.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .menu-toggle.active span:nth-child(2) { opacity: 0; }
+        .menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+        /* --- KAHRAMAN ALANI (Hero) --- */
+        .hero {
+            padding: 100px 5%;
+            display: grid;
+            grid-template-columns: 1fr 1.15fr;
+            align-items: stretch;
+            gap: 50px;
+            min-height: 60vh;
+        }
+        .hero-image img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+        }
+        .hero-subtitle {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .hero-title {
+            font-size: 64px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        .hero-slogan {
+            font-size: 24px;
+            font-weight: 400;
+            border-left: 4px solid var(--accent-blue);
+            padding-left: 15px;
+            margin-bottom: 30px;
+        }
+        .hero-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .btn-outline {
+            display: inline-block;
+            padding: 12px 26px;
+            border: 2px solid var(--text-main);
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .btn-outline:hover {
+            background-color: var(--text-main);
+            color: #ffffff;
+        }
+        .btn-solid {
+            display: inline-block;
+            padding: 12px 26px;
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .btn-solid:hover {
+            background-color: #21548a;
+        }
+
+        /* --- GENEL BÖLÜM STİLLERİ --- */
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .section-header h2 {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        .section-header p {
+            color: #555;
+            font-size: 16px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        /* --- HİZMETLER (Uzmanlık Alanları) --- */
+        .services-section {
+            padding: 80px 5%;
+            background-color: #ffffff;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .service-card {
+            background-color: var(--bg-color);
+            padding: 35px 25px;
+            border-radius: 8px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid var(--accent-blue);
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .service-card h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        /* --- KURUMSAL --- */
+        .about-section {
+            padding: 80px 5%;
+        }
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 50px;
+            align-items: center;
+        }
+        .about-grid h2 {
+            font-size: 34px;
+            margin-bottom: 20px;
+        }
+        .about-grid p {
+            margin-bottom: 16px;
+            color: #3a3a3a;
+        }
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .stat-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        .stat-card .stat-number {
+            font-family: var(--font-heading);
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--accent-blue);
+        }
+        .stat-card .stat-label {
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        /* --- BİRLİKTE ÇALIŞTIĞIMIZ FİRMALAR --- */
+        .partners-section {
+            padding: 60px 5% 80px;
+        }
+        .partners-track-wrap {
+            overflow: hidden;
+            -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+            mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+        }
+        .partners-track {
+            display: flex;
+            width: max-content;
+            gap: 30px;
+            animation: partners-scroll 28s linear infinite;
+        }
+        .partners-track:hover {
+            animation-play-state: paused;
+        }
+        .partner-logo {
+            flex-shrink: 0;
+            width: 170px;
+            height: 100px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .partner-logo:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .partner-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        @keyframes partners-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* --- ÜRÜNLER --- */
+        .products-section {
+            padding: 80px 5%;
+            background-color: #ffffff;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+        }
+        .product-card {
+            border: 1px solid #e4e4e4;
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            transition: border-color 0.3s ease, transform 0.3s ease;
+        }
+        .product-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-4px);
+        }
+        .product-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 18px;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            color: var(--accent-blue);
+            font-size: 20px;
+        }
+        .product-card h3 {
+            font-size: 17px;
+            margin-bottom: 10px;
+        }
+        .product-card p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* --- ÇALIŞMALARIMIZ --- */
+        .work-section {
+            padding: 80px 5%;
+        }
+        .work-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .work-photo {
+            display: block;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .work-photo:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        /* --- İLETİŞİM --- */
+        .contact-section {
+            padding: 80px 5%;
+            background-color: #ffffff;
+        }
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            gap: 50px;
+        }
+        .contact-info-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+        .contact-info-list li {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        .contact-info-icon {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+        .contact-info-list strong {
+            display: block;
+            margin-bottom: 3px;
+        }
+        .contact-info-list span, .contact-info-list a {
+            color: #555;
+            text-decoration: none;
+        }
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid #d5d5d5;
+            border-radius: 5px;
+            font-family: var(--font-body);
+            font-size: 15px;
+            background-color: var(--bg-color);
+        }
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 1px;
+        }
+        .contact-form textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        .contact-form button {
+            align-self: flex-start;
+        }
+
+        /* --- FOOTER --- */
+        .footer {
+            background-color: var(--text-main);
+            color: #d8d8d8;
+            padding: 50px 5% 20px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .footer-grid h4 {
+            color: #ffffff;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .footer-grid p, .footer-grid a {
+            color: #b8b8b8;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .footer-grid a:hover {
+            color: #ffffff;
+        }
+        .social-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 6px;
+        }
+        .social-links a {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+        .social-links a:hover {
+            background-color: var(--accent-blue);
+        }
+        .social-links svg {
+            width: 18px;
+            height: 18px;
+            fill: #ffffff;
+        }
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.15);
+            padding-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+        }
+
+        /* --- MOBİL UYUM --- */
+        @media (max-width: 900px) {
+            .about-grid, .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            .top-bar { justify-content: center; flex-direction: column; align-items: center; gap: 8px; }
+            .top-bar-right { justify-content: center; flex-wrap: wrap; }
+            .header { flex-wrap: wrap; }
+            .menu-toggle { display: flex; }
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                gap: 15px;
+                padding-top: 15px;
+                order: 3;
+            }
+            .nav-links.open { display: flex; }
+            .nav-links .btn-wizard { width: 100%; }
+            .hero-title { font-size: 42px; }
+            .hero { grid-template-columns: 1fr; padding: 60px 5%; text-align: center; }
+            .hero-content { display: flex; flex-direction: column; align-items: center; }
+            .hero-image { order: -1; }
+            .hero-image img { height: 240px; }
+            .hero-slogan { border-left: none; border-bottom: 4px solid var(--accent-blue); padding-left: 0; padding-bottom: 10px; }
+            .hero-actions { justify-content: center; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Açılış Animasyonu (Preloader) -->
+    <div class="preloader">
+        <div class="preloader-bg-top"></div>
+        <div class="preloader-bg-bottom"></div>
+        <div class="preloader-logo">
+            <img src="logo.jpg" alt="Fibar Hidrolik Açılış Logosu">
+        </div>
+    </div>
+
+    <div class="site-header-sticky">
+        <!-- Üst İletişim Barı -->
+        <div class="top-bar">
+            <div class="top-bar-social">
+                <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C8.74 0 8.333.014 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.014 8.333 0 8.74 0 12s.014 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.986 8.74 24 12 24s3.667-.014 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.058-1.28.072-1.687.072-4.947s-.014-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.014 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.897 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.897-.419-.419-.687-.824-.897-1.38-.165-.42-.36-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.06-1.17.255-1.816.42-2.236.21-.57.478-.96.897-1.379.419-.419.81-.687 1.379-.897.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+                </a>
+                <a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+                <span class="top-bar-follow-text">Bizi Takip Edin</span>
+            </div>
+            <div class="top-bar-right">
+                <a href="tel:03120000000">0312 XXX XX XX</a>
+                <a href="mailto:fibarhidrolik@fibar.com.tr">fibarhidrolik@fibar.com.tr</a>
+                <div class="lang-switch">
+                    <button type="button" class="lang-btn active" data-lang="tr">TR</button>
+                    <button type="button" class="lang-btn" data-lang="en" title="Yakında eklenecek">EN</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigasyon Menüsü -->
+        <header class="header">
+            <a href="#" class="logo">
+                <img src="logo.jpg" alt="Fibar Hidrolik Logo">
+            </a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Menüyü aç/kapat" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="nav-links" id="navLinks">
+                <a href="#">Anasayfa</a>
+                <a href="#kurumsal">Kurumsal</a>
+                <a href="#urunler">Ürünler</a>
+                <a href="katalog.html">Katalog</a>
+                <a href="#calismalarimiz">Çalışmalarımız</a>
+                <a href="#iletisim">İletişim</a>
+                <a href="hortum-sihirbazi.html" class="btn-wizard">Doğru Hortumu Bul</a>
+            </nav>
+        </header>
+    </div>
+
+    <!-- Kahraman (Hero) Alanı -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-subtitle">Endüstriyel Çözüm Ortağınız</div>
+            <h1 class="hero-title">FIBAR<br>HİDROLİK</h1>
+            <div class="hero-slogan">Güç Kontrol Altında</div>
+            <div class="hero-actions">
+                <a href="hortum-sihirbazi.html" class="btn-solid">Doğru Hortumu Bul</a>
+                <a href="#iletisim" class="btn-outline">Teklif Al</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="hero-gorsel.jpeg" alt="Fibar Hidrolik üretim ve montaj çalışması">
+        </div>
+    </section>
+
+    <!-- Hizmetler Alanı -->
+    <section class="services-section" id="hizmetler">
+        <div class="section-header">
+            <h2>Uzmanlık Alanlarımız</h2>
+            <p>Endüstriyel standartlarda, yüksek dayanımlı ve güvenilir çözümler üretiyoruz.</p>
+        </div>
+
+        <div class="services-grid">
+            <div class="service-card">
+                <h3>Hidrolik Hortum İmalatı</h3>
+                <p>İhtiyaca uygun ölçü ve basınç değerlerinde, uzun ömürlü hidrolik hortum üretimi ve değişimi.</p>
+            </div>
+            <div class="service-card">
+                <h3>Soket Montajı ve Presleme</h3>
+                <p>Tam sızdırmazlık garantili, profesyonel rekor, başlık ve soket presleme işlemleri.</p>
+            </div>
+            <div class="service-card">
+                <h3>Sistem Test ve Bakımı</h3>
+                <p>Mevcut hidrolik hatların basınç testleri ve yerinde düzenli periyodik bakım hizmetleri.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Kurumsal -->
+    <section class="about-section" id="kurumsal">
+        <div class="about-grid">
+            <div>
+                <h2>Kurumsal</h2>
+                <p>Fibar Hidrolik olarak, endüstriyel hidrolik sistemler alanında yüksek kaliteli üretim ve hızlı çözüm anlayışıyla hizmet veriyoruz. Sahadaki tecrübemizi mühendislik bilgisiyle birleştirerek müşterilerimize kesintisiz üretim süreçleri sunuyoruz.</p>
+                <p>Amacımız; hidrolik hortum, rekor ve sistem bakımı konusunda sektördeki işletmelerin güvenilir çözüm ortağı olmaktır. Kalite kontrolden sevkiyata kadar her aşamada titizlikle çalışıyoruz.</p>
+            </div>
+            <div class="about-stats">
+                <div class="stat-card">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Yıllık Tecrübe</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Tamamlanan Proje</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Acil Servis Desteği</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">%100</div>
+                    <div class="stat-label">Test Edilmiş Ürün</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Birlikte Çalıştığımız Firmalar -->
+    <section class="partners-section" id="firmalar">
+        <div class="section-header">
+            <h2>Birlikte Çalıştığımız Firmalar</h2>
+            <p>Sektörün güvenilir markalarıyla uzun soluklu iş ortaklıkları yürütüyoruz.</p>
+        </div>
+        <div class="partners-track-wrap">
+            <div class="partners-track">
+                <a class="partner-logo" href="https://www.omsvibro.com/tr/" target="_blank" rel="noopener noreferrer"><img src="sirketler/sirketler1.jpeg" alt="OMS"></a>
+                <a class="partner-logo" href="https://www.teksanhidrolik.com.tr/" target="_blank" rel="noopener noreferrer"><img src="sirketler/sirketler2.jpeg" alt="Teksan Hidrolik Rakor"></a>
+                <a class="partner-logo" href="https://www.nurolmakina.com.tr/tr" target="_blank" rel="noopener noreferrer"><img src="sirketler/sirketler3.jpeg" alt="Nurol Makina"></a>
+                <a class="partner-logo" href="https://www.borusancat.com/tr" target="_blank" rel="noopener noreferrer"><img src="sirketler/sirketler4.jpeg" alt="CAT"></a>
+                <a class="partner-logo" href="https://junttan.com" target="_blank" rel="noopener noreferrer"><img src="sirketler/sirketler5.jpeg" alt="Junttan"></a>
+                <a class="partner-logo" href="https://www.hortummarket.com/" target="_blank" rel="noopener noreferrer"><img src="sirketler/hortummarket.jpg" alt="Hortum Market"></a>
+                <a class="partner-logo" href="https://www.omsvibro.com/tr/" target="_blank" rel="noopener noreferrer"><img src="sirketler/sirketler1.jpeg" alt="OMS"></a>
+                <a class="partner-logo" href="https://www.teksanhidrolik.com.tr/" target="_blank" rel="noopener noreferrer"><img src="sirketler/sirketler2.jpeg" alt="Teksan Hidrolik Rakor"></a>
+                <a class="partner-logo" href="https://www.nurolmakina.com.tr/tr" target="_blank" rel="noopener noreferrer"><img src="sirketler/sirketler3.jpeg" alt="Nurol Makina"></a>
+                <a class="partner-logo" href="https://www.borusancat.com/tr" target="_blank" rel="noopener noreferrer"><img src="sirketler/sirketler4.jpeg" alt="CAT"></a>
+                <a class="partner-logo" href="https://junttan.com" target="_blank" rel="noopener noreferrer"><img src="sirketler/sirketler5.jpeg" alt="Junttan"></a>
+                <a class="partner-logo" href="https://www.hortummarket.com/" target="_blank" rel="noopener noreferrer"><img src="sirketler/hortummarket.jpg" alt="Hortum Market"></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ürünler -->
+    <section class="products-section" id="urunler">
+        <div class="section-header">
+            <h2>Ürünlerimiz</h2>
+            <p>Farklı basınç ve ortam koşullarına uygun geniş ürün yelpazesi.</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-icon">N</div>
+                <h3>Nipeller</h3>
+                <p>Farklı ölçü ve standartlarda nipel çeşitleriyle hattınıza aynı gün uygun bağlantıyı sağlıyoruz.</p>
+            </div>
+            <div class="product-card">
+                <div class="product-icon">R</div>
+                <h3>Rakorlar</h3>
+                <p>Her sisteme uyumlu rakor seçenekleriyle sızdırmaz, güvenilir bağlantı çözümleri sunuyoruz.</p>
+            </div>
+            <div class="product-card">
+                <div class="product-icon">S</div>
+                <h3>Soketler</h3>
+                <p>Basınca dayanıklı soket çeşitlerimizle hızlı montaj, kesintisiz üretim imkanı sağlıyoruz.</p>
+            </div>
+            <div class="product-card">
+                <div class="product-icon">H</div>
+                <h3>Hortumlar</h3>
+                <p>Geniş hortum yelpazemizle ihtiyacınıza en uygun çözümü hızlıca tedarik ediyoruz.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Çalışmalarımız -->
+    <section class="work-section" id="calismalarimiz">
+        <div class="section-header">
+            <h2>Çalışmalarımız</h2>
+            <p>Farklı sektörlerden müşterilerimiz için tamamladığımız projelerden örnekler.</p>
+        </div>
+        <div class="work-grid">
+            <img class="work-photo" src="calismalar/calisma1.jpeg" alt="Fibar Hidrolik çalışma örneği">
+            <img class="work-photo" src="calismalar/calisma2.jpeg" alt="Fibar Hidrolik çalışma örneği">
+            <img class="work-photo" src="calismalar/calisma3.jpeg" alt="Fibar Hidrolik çalışma örneği">
+            <img class="work-photo" src="calismalar/calisma4.jpeg" alt="Fibar Hidrolik çalışma örneği">
+            <img class="work-photo" src="calismalar/calisma5.jpeg" alt="Fibar Hidrolik çalışma örneği">
+            <img class="work-photo" src="calismalar/calisma6.jpeg" alt="Fibar Hidrolik çalışma örneği">
+        </div>
+    </section>
+
+    <!-- İletişim -->
+    <section class="contact-section" id="iletisim">
+        <div class="section-header">
+            <h2>İletişim</h2>
+            <p>Sorularınız ve teklif talepleriniz için bize ulaşın.</p>
+        </div>
+        <div class="contact-grid">
+            <ul class="contact-info-list">
+                <li>
+                    <div class="contact-info-icon">T</div>
+                    <div>
+                        <strong>Telefon</strong>
+                        <a href="tel:03120000000">0312 XXX XX XX</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="contact-info-icon">E</div>
+                    <div>
+                        <strong>E-posta</strong>
+                        <a href="mailto:fibarhidrolik@fibar.com.tr">fibarhidrolik@fibar.com.tr</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="contact-info-icon">A</div>
+                    <div>
+                        <strong>Adres</strong>
+                        <span>Organize Sanayi Bölgesi, Ankara / Türkiye</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="contact-info-icon">S</div>
+                    <div>
+                        <strong>Çalışma Saatleri</strong>
+                        <span>Pazartesi - Cumartesi, 08:00 - 18:00</span>
+                    </div>
+                </li>
+            </ul>
+            <form class="contact-form" onsubmit="return false;">
+                <div class="form-row">
+                    <input type="text" name="name" placeholder="Ad Soyad" required>
+                    <input type="tel" name="phone" placeholder="Telefon" required>
+                </div>
+                <input type="email" name="email" placeholder="E-posta" required>
+                <textarea name="message" placeholder="Talebinizi yazın..." required></textarea>
+                <button type="submit" class="btn-solid" style="border:none; cursor:pointer;">Gönder</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h4>Fibar Hidrolik</h4>
+                <p>Endüstriyel hidrolik sistemler için üretim, montaj ve bakım hizmetleri.</p>
+            </div>
+            <div>
+                <h4>Kurumsal</h4>
+                <a href="#kurumsal">Hakkımızda</a>
+                <a href="#urunler">Ürünler</a>
+                <a href="#calismalarimiz">Çalışmalarımız</a>
+            </div>
+            <div>
+                <h4>Hizmetler</h4>
+                <a href="#hizmetler">Hortum İmalatı</a>
+                <a href="#hizmetler">Soket Montajı</a>
+                <a href="#hizmetler">Sistem Bakımı</a>
+                <a href="katalog.html">Ürün Kataloğu</a>
+                <a href="hortum-sihirbazi.html">Hortum Sihirbazı</a>
+            </div>
+            <div>
+                <h4>İletişim</h4>
+                <a href="tel:03120000000">0312 XXX XX XX</a>
+                <a href="mailto:fibarhidrolik@fibar.com.tr">fibarhidrolik@fibar.com.tr</a>
+                <div class="social-links">
+                    <a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    </a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    </a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C8.74 0 8.333.014 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.014 8.333 0 8.74 0 12s.014 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.986 8.74 24 12 24s3.667-.014 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.058-1.28.072-1.687.072-4.947s-.014-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.014 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.897 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.897-.419-.419-.687-.824-.897-1.38-.165-.42-.36-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.06-1.17.255-1.816.42-2.236.21-.57.478-.96.897-1.379.419-.419.81-.687 1.379-.897.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; <span id="year"></span> Fibar Hidrolik. Tüm hakları saklıdır.
+            · <a href="portal-giris.html" style="color:#999;">Personel Girişi</a>
+        </div>
+    </footer>
+
+    <script>
+        // Mobil menü aç/kapat
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        menuToggle.addEventListener('click', () => {
+            const isOpen = navLinks.classList.toggle('open');
+            menuToggle.classList.toggle('active', isOpen);
+            menuToggle.setAttribute('aria-expanded', isOpen);
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('open');
+                menuToggle.classList.remove('active');
+                menuToggle.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Dil seçici (şimdilik yalnızca görsel; İngilizce içerik daha sonra eklenecek)
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+
+</body>
+</html>
