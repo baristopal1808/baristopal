@@ -12,6 +12,66 @@ devam ederiz.
 
 ## Son Konuşma Özeti (Devam Notu)
 
+**Tarih:** 2026-09-11
+
+Bu oturumda proje ilk kez GitHub'a bağlandı ve birkaç yapısal/işlevsel
+değişiklik yapıldı:
+
+- **GitHub bağlantısı kuruldu:** Bu klasör git deposu haline getirildi ve
+  kullanıcının GitHub hesabındaki `baristopal1808/baristopal` reposuyla
+  birleştirildi (`git merge --allow-unrelated-histories`, çakışma yok).
+  Commit yazarı: **Barış Topal** / `baris.topal1808@gmail.com`.
+- **`montaj-proseduru` ayrı bir projeye taşındı:** Başlangıçta bu klasörün
+  kendisi montaj prosedürü oluşturma aracının deposuydu (Python script +
+  ürün verileri, bkz. eski geçmiş). Kullanıcı bunun site/portal projesiyle
+  aynı repoda görünmesini istemedi. İçerik ayrı bir klasöre kopyalanıp
+  kendi bağımsız git deposu olarak **`baristopal1808/Montajproseduru`**
+  reposuna push edildi, bu depodan tamamen kaldırıldı. Yerel karşılığı artık
+  `Desktop/Prosedürler/montaj-proseduru-standalone/` klasöründe (kullanıcı
+  isterse Explorer'dan `montaj-proseduru` olarak yeniden adlandırabilir).
+- **VS Code görünen ismi düzeltildi:** Bu klasörün adı hâlâ (tarihsel
+  nedenle) "montaj-proseduru" — VS Code bunu proje adı olarak gösteriyordu
+  ve kullanıcı bunu istemedi. Fiziksel yeniden adlandırma VS Code açıkken
+  kilit nedeniyle yapılamadı; bunun yerine **`Fibar Hidrolik Sitesi.code-workspace`**
+  dosyası oluşturuldu — kullanıcı bunu "File → Open Workspace from File..."
+  ile açarsa VS Code'da isim "Fibar Hidrolik Sitesi" olarak görünür, klasör
+  adı ve git deposu etkilenmez. **Kalıcı çözüm için** kullanıcı isterse
+  VS Code'u kapatıp Explorer'dan klasörü `fibar-hidrolik-sitesi` gibi bir
+  isme çevirebilir (git çalışmasını etkilemez).
+- **VS Code eklentileri kuruldu:** Live Server, Prettier, Auto Rename Tag,
+  Auto Close Tag, HTML CSS Support, Color Highlight, Gutter Preview
+  (görsel önizleme), GitLens — statik HTML/CSS ağırlıklı, görsel/renk
+  yoğun bu proje için seçildi.
+- **`tasarim-guncelleme-onizleme/` klasörüne WhatsApp özelliği eklendi**
+  (henüz SADECE önizleme klasöründe, kök dosyalara uygulanmadı):
+  - `index.html`, `katalog.html`, `hortum-sihirbazi.html` — sağ altta sabit,
+    yeşil (#25D366) dairesel WhatsApp butonu (`.wa-float-btn` class'ı,
+    her dosyanın kendi `<style>` bloğunda tanımlı, sayfaya özel hazır mesajla
+    `wa.me` linkine gidiyor).
+  - `hortum-sihirbazi.html`'deki "Emin değilim, teknik destek almak
+    istiyorum" linki artık `index.html#iletisim`'e değil, doğrudan WhatsApp'a
+    ("...teknik destek almak istiyorum." mesajıyla) yönlendiriyor — kullanıcı
+    isteğiyle: iletişim sayfasına gitmek müşteriye zaman kaybettiriyordu.
+  - Numara: **`905384721912`** (kullanıcının kendi şahsi cep numarası,
+    `0538 472 1912` — test amaçlı kullanılıyor, ileride gerçek WhatsApp
+    Business numarasıyla değiştirilebilir). Üç dosyada da (buton + "Teklif
+    İste" JS kodu + teknik destek linki) aynı numara kullanılıyor.
+- **Kullanıcıya site (müşteri odaklı) ve portal (iç iletişim/iş takibi)
+  için geliştirme önerileri verildi** (bkz. sohbet geçmişi) — SSS, vaka
+  çalışmaları, WhatsApp/analytics, portal için görev panosu, bildirim
+  sistemi, tedarikçi modülü, gerçek çoklu kullanıcı/backend ihtiyacı vb.
+  Henüz hiçbiri için karar alınmadı, sadece öneri aşamasında.
+
+**Sırada ne var:** Kullanıcı hem 11 Ağustos'taki tasarım yenilemesini
+(font/renk/koyu tema/hero) hem de bu oturumdaki WhatsApp değişikliklerini
+`tasarim-guncelleme-onizleme/` klasöründe inceleyip onaylayacak. Onaylanınca
+hepsi birden kök dosyalara (`index.html`, `katalog.html`,
+`hortum-sihirbazi.html`) uygulanıp önizleme klasörü kaldırılacak. Ayrıca
+yukarıdaki site/portal geliştirme önerilerinden hangisiyle başlanacağına
+karar verilecek.
+
+---
+
 **Tarih:** 2026-08-11
 
 Kullanıcı bu bilgisayara Node.js indirdi (`Desktop/node-v24.19.0-win-x64`,
