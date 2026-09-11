@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "{{ kimlik.font_adi }}", Arial, sans-serif;
+    color: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  h1 {
+    color: {{ kimlik.ana_renk_hex }};
+    font-size: 22px;
+    margin: 0 0 12px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid {{ kimlik.ana_renk_hex }};
+  }
+  h2 {
+    color: {{ kimlik.ana_renk_hex }};
+    font-size: 13px;
+    margin: 0 0 6px 0;
+    padding-bottom: 3px;
+    border-bottom: 1px solid {{ kimlik.ikincil_renk_hex }};
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .layout { display: flex; gap: 16px; }
+  .col-gorsel { flex: 0 0 54%; text-align: center; }
+  .col-bilgi { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 14px; min-width: 0; }
+  .kart {
+    border: 1px solid {{ kimlik.ikincil_renk_hex }}; border-radius: 3px;
+    padding: 10px 12px; background: #fff;
+  }
+  .gorsel-box img {
+    max-width: 100%; max-height: 212mm; width: auto; height: auto;
+    display: inline-block; border: 1px solid {{ kimlik.ikincil_renk_hex }};
+  }
+  .gorsel-placeholder {
+    width: 100%; height: 212mm; border: 1px dashed {{ kimlik.ikincil_renk_hex }};
+    display: flex; align-items: center; justify-content: center;
+    color: {{ kimlik.ikincil_renk_hex }}; font-size: 11px; text-align: center; padding: 10px;
+  }
+  ol.notlar { margin: 0; padding-left: 18px; font-size: 11px; line-height: 1.55; }
+  ol.notlar li { margin-bottom: 5px; }
+  ol.notlar li::marker { color: {{ kimlik.ana_renk_hex }}; font-weight: bold; }
+  ol.notlar li.onemli {
+    background: #fdecea; border-left: 3px solid {{ kimlik.ana_renk_hex }};
+    padding: 3px 6px; margin-left: -6px; font-weight: bold; list-style-position: inside;
+  }
+  table.malzeme { width: 100%; border-collapse: collapse; font-size: 10px; }
+  table.malzeme th { background: {{ kimlik.ana_renk_hex }}; color: #fff; text-align: left; padding: 4px 6px; font-weight: bold; }
+  table.malzeme td { border: 1px solid {{ kimlik.ikincil_renk_hex }}; padding: 3px 6px; }
+  table.malzeme tr:nth-child(even) td { background: #f7f7f6; }
+  .adim { margin-bottom: 12px; break-inside: avoid; }
+  .adim h3 { font-size: 12px; color: {{ kimlik.ana_renk_hex }}; margin: 0 0 3px 0; }
+  .adim p { font-size: 11px; margin: 0; }
+  .adim .tork {
+    display: inline-block; margin-top: 4px; padding: 2px 8px;
+    border: 1px solid {{ kimlik.ana_renk_hex }}; color: {{ kimlik.ana_renk_hex }};
+    font-size: 10px; font-weight: bold;
+  }
+  .adim img { max-width: 220px; display: block; margin-top: 6px; border: 1px solid {{ kimlik.ikincil_renk_hex }}; }
+</style>
+</head>
+<body>
+  <h1>{{ urun.urun_adi }} &mdash; Montaj Prosedürü</h1>
+
+  <div class="layout">
+    <div class="col-gorsel">
+      <h2>Patlatılmış Görünüm</h2>
+      <div class="gorsel-box">
+        {% if gorsel_patlamis %}
+          <img src="{{ gorsel_patlamis }}">
+        {% else %}
+          <div class="gorsel-placeholder">[Patlatılmış görünüm bekleniyor:<br>{{ urun.patlamis_gorunum_dosya or 'patlamis_gorunum.png' }}]</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-bilgi">
+      {% if notlar %}
+      <div class="kart">
+        <h2>Montaj Notları</h2>
+        <ol class="notlar">
+          {% for madde in notlar %}<li{% if "!!" in madde %} class="onemli"{% endif %}>{{ madde }}</li>{% endfor %}
+        </ol>
+      </div>
+      {% endif %}
+      {% if malzemeler %}
+      <div class="kart">
+        <h2>Malzeme Listesi</h2>
+        <table class="malzeme">
+          <tr>{% for kolon in malzemeler[0].keys() %}<th>{{ kolon }}</th>{% endfor %}</tr>
+          {% for satir in malzemeler %}
+          <tr>{% for deger in satir.values() %}<td>{{ deger }}</td>{% endfor %}</tr>
+          {% endfor %}
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if adimlar %}
+  <h2 style="margin-top: 16px;">Montaj Adımları</h2>
+  {% for adim in adimlar %}
+  <div class="adim">
+    <h3>Adım {{ adim.no }}: {{ adim.baslik }}</h3>
+    <p>{{ adim.aciklama }}</p>
+    {% if adim.tork %}<span class="tork">Sıkma torku: {{ adim.tork }}</span>{% endif %}
+    {% if adim.gorsel_b64 %}<img src="{{ adim.gorsel_b64 }}">{% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+</body>
+</html>
