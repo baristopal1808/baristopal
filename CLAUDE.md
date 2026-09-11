@@ -61,6 +61,35 @@ değişiklik yapıldı:
   çalışmaları, WhatsApp/analytics, portal için görev panosu, bildirim
   sistemi, tedarikçi modülü, gerçek çoklu kullanıcı/backend ihtiyacı vb.
   Henüz hiçbiri için karar alınmadı, sadece öneri aşamasında.
+- **Kurumsal tanıtım sunumu hazırlandı ve eklendi:** `kurumsal-sunum/`
+  klasöründe `Fibar-Hidrolik-Kurumsal-Sunum.pdf` (6 slayt: Kapak, Biz
+  Kimiz/istatistikler, Uzmanlık Alanlarımız, müşteri süreci — 6 adımlı
+  "Sizinle Nasıl Çalışıyoruz", Kurucularımız, İletişim) + düzenlenebilir
+  kaynağı `sunum-kaynak.html`. Marka renkleri (haki `#C8CBB4`, antrasit
+  `#2A2A2A`, mavi `#2B6CB0`) ve `logo.jpg` kullanıldı. **Kurucular
+  bölümü:** Fırat Aksümer (9 yıl tecrübe: 2 yıl Ostim'de pompa/hortum
+  imalatı yapan bir firma, 4 yıl Teksan Hidrolik Rakor'da tüm makine
+  ekibinin başında hortum kesim/presleme, sonrasında OMS Pile Driving'de
+  tüm yüksek basınçlı hortum üretiminden sorumlu, sıfır hata) ve Barış
+  Topal (2 yıl Çekosan Çelik Konstrüksiyon imalat sorumluluğu, ardından
+  OMS Pile Driving'de Nisan 2024'ten beri Güç Ünitesi Montaj Takım
+  Liderliği, 1 yıldır hortum konusunda gelişim, ayrıca bu site/portal
+  işinin yürütücüsü). İletişim slaytında aynı şahsi WhatsApp numarası
+  kullanıldı (`0538 472 1912`). **Not:** Barış'ın da OMS Pile Driving'de
+  çalıştığı bilgisi, Fırat'ın anlatımındaki "OMS Pile Driving (şuan
+  çalıştığımız şirketimiz)" ifadesinden çıkarıldı — kullanıcı onayladı,
+  yanlışsa düzeltilmeli. PDF, headless Edge (`msedge --headless=new
+  --print-to-pdf`) ile `sunum-kaynak.html`'den üretiliyor; kaynak
+  değişirse aynı komutla yeniden üretilebilir.
+- **Klasör düzeni kullanıcı tarafından "dağınık" olarak işaretlendi**
+  (bkz. proje hafızası `fibar-site-folder-cleanup` — ayrı bir Claude Code
+  hafıza dosyasında) — kullanıcı ileride birlikte düzenlemek istiyor,
+  şimdilik dokunulmadı. Bilinen dağınıklık: `logo.jpg`/`.logo.jpg`
+  kopyası, `hero-gorsel.jpeg`/`fıbar hidrolik yazısı yanındaki
+  görsel.jpeg` muhtemel kopyası, Türkçe/ASCII isimli çift görsel
+  klasörleri (`hortum görselleri`↔`hortum-gorselleri`, `fıbar calısmalar
+  görseli`↔`calismalar`), işlevsiz 0 byte'lık `BARISTOPAL-CALISMALAR`
+  dosyası.
 
 **Sırada ne var:** Kullanıcı hem 11 Ağustos'taki tasarım yenilemesini
 (font/renk/koyu tema/hero) hem de bu oturumdaki WhatsApp değişikliklerini
@@ -68,7 +97,9 @@ değişiklik yapıldı:
 hepsi birden kök dosyalara (`index.html`, `katalog.html`,
 `hortum-sihirbazi.html`) uygulanıp önizleme klasörü kaldırılacak. Ayrıca
 yukarıdaki site/portal geliştirme önerilerinden hangisiyle başlanacağına
-karar verilecek.
+ve klasör düzeni temizliğine ne zaman başlanacağına karar verilecek.
+Kurumsal sunumdaki kurucular bölümü kullanıcı tarafından son kez
+doğrulanmalı (özellikle Barış'ın OMS bağlantısı çıkarımı).
 
 ---
 
